@@ -225,6 +225,8 @@ textarea.input { resize: vertical; min-height: 80px; font-size: 1.05rem; }
 .ans:nth-child(2) { --c: #e0664a; }
 .ans:nth-child(3) { --c: #2f9e5b; }
 .ans:nth-child(4) { --c: #f5c341; --t: var(--ink); }
+.ans.enter { animation: ans-in .35s cubic-bezier(.3,1.4,.5,1) both; animation-delay: calc(150ms + var(--d) * 90ms); }
+@keyframes ans-in { from { opacity: 0; transform: translateY(14px) scale(.96); } to { opacity: 1; transform: none; } }
 .ans:disabled { cursor: default; }
 .ans.dim { opacity: .4; }
 .ans.correct { --c: var(--ok); --t: #fff; animation: bounce .4s; }

@@ -164,6 +164,8 @@ const MIME = {
   '.ico': 'image/x-icon',
   '.json': 'application/json',
   '.webmanifest': 'application/manifest+json',
+  '.mp3': 'audio/mpeg',
+  '.txt': 'text/plain; charset=utf-8',
 };
 
 function serveStatic(req, res, pathname) {
@@ -179,7 +181,10 @@ function serveStatic(req, res, pathname) {
       res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }).end('No encontrado');
       return;
     }
-    res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' });
+    const headers = { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' };
+    // los sonidos y la librería no cambian: que el navegador los guarde un día
+    if (rel.startsWith('/sounds/') || rel.startsWith('/vendor/')) headers['Cache-Control'] = 'public, max-age=86400';
+    res.writeHead(200, headers);
     res.end(data);
   });
 }

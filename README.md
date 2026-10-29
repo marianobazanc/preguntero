@@ -13,6 +13,7 @@ Los alumnos escriben su nombre, eligen un personaje y responden contra reloj. Al
 - Después de cada respuesta se muestra la correcta y una **explicación** para aprender del error.
 - Tema claro con colores planos. Mascota animada ("Celu", una célula), sonidos, confeti e ilustraciones SVG propias de biología. No usa emojis, así que se ve igual en Windows, Android y iPhone.
 - Ranking que se actualiza solo cada 5 segundos, ideal para proyectar en el aula.
+- Sonidos de juego reales (efectos y jingles de [Kenney](https://kenney.nl), licencia CC0) reproducidos con [Howler.js](https://howlerjs.com): tic-tac del contrarreloj que se acelera en los últimos 5 segundos, cuenta regresiva, transiciones entre pantallas, aparición de las opciones, acierto, error, rachas, puntaje que sube contando y fanfarria de steel drum en el podio. Se pueden silenciar con el botón del parlante.
 
 **Para el docente** (`/#/profesor`, protegido con PIN)
 - Crear, editar y borrar preguntas con 2 a 4 opciones, marcando la correcta.
@@ -65,6 +66,8 @@ data/seed-questions.json  Preguntas de ejemplo (se copian la primera vez)
 public/index.html         Página e ilustraciones SVG
 public/styles.css         Estilos
 public/app.js             Lógica del juego, ranking y panel docente
+public/sounds/            Efectos de sonido en MP3 (Kenney, CC0)
+public/vendor/            Howler.js (MIT), incluida para no depender de internet
 ```
 
 La respuesta correcta nunca se envía al navegador del alumno antes de que responda: el servidor corrige cada respuesta y calcula los puntos.
