@@ -54,45 +54,62 @@
   }
 
   let toastTimer;
-  function toast(msg, isError = false) {
+  function toast(msg, isError = false, sound = isError ? 'error' : 'notify') {
     const el = document.getElementById('toast');
     el.textContent = msg;
     el.classList.toggle('error', isError);
     el.classList.add('show');
+    if (sound) sfx(sound);
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
   }
 
-  // ---------- sonido (WebAudio, sin archivos) ----------
-  let actx;
-  function beep(notes) {
-    if (!state.sound) return;
-    try {
-      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-      let t = actx.currentTime;
-      for (const [freq, dur, type = 'triangle'] of notes) {
-        const o = actx.createOscillator();
-        const g = actx.createGain();
-        o.type = type;
-        o.frequency.value = freq;
-        g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.18, t + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-        o.connect(g).connect(actx.destination);
-        o.start(t);
-        o.stop(t + dur + 0.02);
-        t += dur * 0.85;
-      }
-    } catch { /* sin audio */ }
-  }
-  const sfx = {
-    correct: () => beep([[523, 0.12], [659, 0.12], [784, 0.22]]),
-    wrong: () => beep([[300, 0.18, 'sawtooth'], [220, 0.3, 'sawtooth']]),
-    tick: () => beep([[880, 0.05, 'square']]),
-    go: () => beep([[440, 0.1], [880, 0.25]]),
-    win: () => beep([[523, 0.12], [659, 0.12], [784, 0.12], [1047, 0.4]]),
-    click: () => beep([[660, 0.05]]),
+  // ---------- sonido (Howler.js + efectos de Kenney, CC0) ----------
+  // nombre -> volumen base. Los archivos están en /sounds/<nombre>.mp3
+  const SOUNDS = {
+    click: 0.45, select: 0.5, hover: 0.12, toggle: 0.5,
+    'whoosh-in': 0.22, 'whoosh-out': 0.18, panel: 0.3, pop: 0.3, pluck: 0.3,
+    count: 0.6, go: 0.45, tick: 0.22, 'tick-hard': 0.5, timeup: 0.45,
+    correct: 0.55, streak: 0.5, wrong: 0.45, points: 0.35, rise: 0.4,
+    notify: 0.3, error: 0.4, save: 0.45, delete: 0.4, win: 0.55, finish: 0.5,
   };
+  const howls = {};
+  if (window.Howl) {
+    for (const [name, volume] of Object.entries(SOUNDS)) {
+      howls[name] = new Howl({ src: [`/sounds/${name}.mp3`], volume, preload: true });
+    }
+  }
+  function sfx(name, { rate = 1, volume, delay = 0 } = {}) {
+    if (!state.sound || !howls[name]) return;
+    const play = () => {
+      const h = howls[name];
+      const id = h.play();
+      if (rate !== 1) h.rate(rate, id);
+      if (volume !== undefined) h.volume(volume, id);
+    };
+    if (delay) setTimeout(play, delay);
+    else play();
+  }
+
+  // Sonido de clic para todos los botones; data-sfx cambia o anula el sonido
+  document.addEventListener('click', (e) => {
+    const el = e.target.closest('.btn, .navbtn, .tab, .iconbtn, .teacher-link');
+    if (!el || el.disabled || el.id === 'soundToggle') return;
+    const name = el.closest('[data-sfx]')?.dataset.sfx ?? 'click';
+    if (name !== 'none') sfx(name);
+  });
+  // Sonido suave al pasar el mouse (solo en dispositivos con puntero)
+  let lastHover = 0;
+  let hoverEl = null;
+  if (matchMedia('(hover: hover)').matches) {
+    document.addEventListener('pointerover', (e) => {
+      const el = e.target.closest('.btn, .ans:not(:disabled), .avatar-opt, .tab');
+      if (!el || el === hoverEl || el.disabled) { hoverEl = el; return; }
+      hoverEl = el;
+      const now = performance.now();
+      if (now - lastHover > 70) { lastHover = now; sfx('hover'); }
+    });
+  }
 
   const soundBtn = document.getElementById('soundToggle');
   const paintSound = () => { soundBtn.innerHTML = ic(state.sound ? 'sound' : 'mute'); };
@@ -100,7 +117,7 @@
     state.sound = !state.sound;
     localStorage.setItem('preguntero-sound', state.sound ? 'on' : 'off');
     paintSound();
-    sfx.click();
+    sfx('toggle');
   });
   paintSound();
 
@@ -157,11 +174,14 @@
     profesor: renderAdmin,
   };
 
+  let firstRoute = true;
   function router() {
     cleanup();
     cleanup = () => {};
     const key = location.hash.replace(/^#\/?/, '').split('/')[0];
     const fn = routes[key] || renderHome;
+    if (!firstRoute) sfx('whoosh-in');
+    firstRoute = false;
     $app.innerHTML = '';
     window.scrollTo(0, 0);
     fn();
@@ -238,7 +258,7 @@
       b.addEventListener('click', () => {
         chosen = b.dataset.av;
         $app.querySelectorAll('.avatar-opt').forEach((x) => x.setAttribute('aria-pressed', x === b));
-        sfx.click();
+        sfx('select', { rate: 0.9 + Math.random() * 0.2 });
       })
     );
     const nameInput = document.getElementById('name');
@@ -270,22 +290,23 @@
     $app.innerHTML = `<section class="countdown"><div class="num" id="cd">3</div></section>`;
     const cd = document.getElementById('cd');
     const restart = () => { cd.style.animation = 'none'; void cd.offsetWidth; cd.style.animation = ''; };
-    sfx.tick();
+    sfx('count');
+    let go;
     const iv = setInterval(() => {
       n -= 1;
       if (n === 0) {
         clearInterval(iv);
-        sfx.go();
+        sfx('go');
         cd.textContent = '¡Ya!';
         restart();
-        setTimeout(showQuestion, 600);
+        go = setTimeout(showQuestion, 600);
         return;
       }
-      sfx.tick();
+      sfx('count', { rate: 1 + (3 - n) * 0.12 });
       cd.textContent = n;
       restart();
     }, 900);
-    cleanup = () => clearInterval(iv);
+    cleanup = () => { clearInterval(iv); clearTimeout(go); };
   }
 
   function showQuestion() {
@@ -318,7 +339,7 @@
           ${q.image ? `<img class="qimg" src="${esc(q.image)}" alt="Imagen de la pregunta">` : ''}
           <div class="answers">
             ${q.answers.map((a, i) => `
-              <button class="ans" data-i="${i}">
+              <button class="ans enter" data-i="${i}" style="--d:${i}">
                 <span class="ico">${art(ANSWER_ICONS[i])}</span>
                 <span>${esc(a)}</span>
               </button>`).join('')}
@@ -329,28 +350,39 @@
 
     const timerEl = document.getElementById('timer');
     const timerNum = document.getElementById('timerNum');
+    // Las opciones entran de a una, con un "pop" que sube de tono
+    const pops = q.answers.map((_, i) => setTimeout(() => sfx('pop', { rate: 1 + i * 0.12 }), 150 + i * 90));
+
     const start = performance.now();
     let done = false;
-    let lastSec = Math.round(timeMs / 1000);
+    let lastHalf = Math.ceil(timeMs / 500);
     let raf;
 
+    // Contrarreloj: un tic suave por segundo; en los últimos 5 segundos,
+    // tic fuerte cada medio segundo y cada vez más agudo.
     const tick = () => {
       const left = Math.max(0, timeMs - (performance.now() - start));
       const p = left / timeMs;
       timerEl.style.setProperty('--p', p);
-      const sec = Math.ceil(left / 1000);
-      if (sec !== lastSec) {
-        lastSec = sec;
-        timerNum.textContent = sec;
-        if (sec <= 5 && sec > 0) sfx.tick();
+      const half = Math.ceil(left / 500);
+      if (half !== lastHalf && left > 0) {
+        lastHalf = half;
+        const sec = Math.ceil(left / 1000);
+        const onSecond = half % 2 === 0;
+        if (onSecond) timerNum.textContent = sec;
+        if (sec <= 5) sfx('tick-hard', { rate: 1 + (5 - sec) * 0.1, volume: onSecond ? 0.55 : 0.3 });
+        else if (onSecond) sfx('tick');
       }
       timerEl.classList.toggle('warn', p < 0.5 && p >= 0.25);
       timerEl.classList.toggle('danger', p < 0.25);
-      if (left <= 0) return answer(-1, timeMs);
+      if (left <= 0) {
+        timerNum.textContent = 0;
+        return answer(-1, timeMs);
+      }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    cleanup = () => cancelAnimationFrame(raf);
+    cleanup = () => { cancelAnimationFrame(raf); pops.forEach(clearTimeout); };
 
     $app.querySelectorAll('.ans').forEach((b) =>
       b.addEventListener('click', () => answer(Number(b.dataset.i), performance.now() - start))
@@ -360,8 +392,10 @@
       if (done) return;
       done = true;
       cancelAnimationFrame(raf);
+      if (choice < 0) sfx('timeup');
+      else sfx('click');
       const btns = [...$app.querySelectorAll('.ans')];
-      btns.forEach((b) => (b.disabled = true));
+      btns.forEach((b) => { b.disabled = true; b.classList.remove('enter'); });
       let r;
       try {
         r = await api(`/games/${g.gameId}/answer`, {
@@ -388,13 +422,14 @@
       });
 
       if (r.isCorrect) {
-        sfx.correct();
+        sfx(g.streak >= 3 ? 'streak' : 'correct');
+        sfx('points', { rate: 1 + Math.min(g.streak, 5) * 0.08, delay: 280 });
         const pop = document.createElement('div');
         pop.className = 'points-pop';
         pop.textContent = `+${fmt(r.points)}`;
         document.body.appendChild(pop);
         setTimeout(() => pop.remove(), 1200);
-      } else sfx.wrong();
+      } else if (choice >= 0) sfx('wrong');
 
       const praise = ['¡Excelente!', '¡Genial!', '¡Bien ahí!', '¡Sos crack!', '¡Impecable!'];
       const title = r.isCorrect
@@ -411,12 +446,13 @@
           </div>
           <div class="actions"><button class="btn ${last ? 'yellow' : ''}" id="nextBtn">${last ? `Ver resultados ${ic('flag')}` : `Siguiente ${ic('arrow')}`}</button></div>
         </div>`;
+      sfx('panel', { delay: 450 });
       const next = document.getElementById('nextBtn');
       next.focus({ preventScroll: true });
       fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       next.addEventListener('click', () => {
-        sfx.click();
         if (last) return go('#/resultado');
+        sfx('whoosh-in');
         g.index += 1;
         showQuestion();
       });
@@ -445,7 +481,7 @@
       <section class="screen card results">
         ${mascot()}
         <h2 class="who">${avatar(state.player.avatar)} ${esc(state.player.name)}</h2>
-        <div class="big-score">${fmt(r.score)}</div>
+        <div class="big-score" id="bigScore">0</div>
         <div class="muted" style="font-weight:800">puntos</div>
         <div class="stats">
           <div class="stat"><b>${r.correct}/${r.total}</b><span>correctas</span></div>
@@ -459,7 +495,28 @@
         </div>
       </section>`;
     state.game = null;
-    if (r.position <= 3 || pct >= 0.7) { sfx.win(); confetti(); }
+
+    // El puntaje sube contando, con tics que se aceleran
+    const el = document.getElementById('bigScore');
+    const dur = r.score ? 1100 : 0;
+    const t0 = performance.now();
+    let lastStep = -1;
+    let raf;
+    const count = (now) => {
+      const k = dur ? Math.min(1, (now - t0) / dur) : 1;
+      const eased = 1 - Math.pow(1 - k, 3);
+      el.textContent = fmt(Math.round(r.score * eased));
+      const step = Math.floor(eased * 14);
+      if (step !== lastStep && k < 1) { lastStep = step; sfx('tick', { rate: 1 + step * 0.05, volume: 0.3 }); }
+      if (k < 1) raf = requestAnimationFrame(count);
+      else {
+        const great = r.position <= 3 || pct >= 0.7;
+        sfx(great ? 'win' : 'finish');
+        if (great) confetti();
+      }
+    };
+    raf = requestAnimationFrame(count);
+    cleanup = () => cancelAnimationFrame(raf);
   }
 
   // ---------- pantalla: ranking ----------
@@ -483,6 +540,7 @@
       const sig = JSON.stringify(list.map((r) => [r.id, r.score]));
       if (sig === lastSig) return;
       lastSig = sig;
+      if (!first) sfx('pluck'); // alguien nuevo terminó de jugar
       paintRanking(list, first);
       first = false;
     };
@@ -529,7 +587,19 @@
             <span class="pts">${fmt(r.score)}</span>
           </li>`).join('')}
       </ol>` : ''}`;
-    if (celebrate && state.lastGameId && list.slice(0, 3).some((r) => r.id === state.lastGameId)) confetti();
+    if (celebrate) {
+      // Los escalones suben 3° → 2° → 1°, cada uno con su sonido
+      const n = Math.min(list.length, 3);
+      if (n >= 3) sfx('rise', { rate: 0.9, delay: 150 });
+      if (n >= 2) sfx('rise', { rate: 1.0, delay: 350 });
+      sfx('rise', { rate: 1.15, delay: 550 });
+      sfx('streak', { delay: 950 });
+      if (rest.length) sfx('pluck', { delay: 1100 });
+      if (state.lastGameId && list.slice(0, 3).some((r) => r.id === state.lastGameId)) {
+        sfx('win', { delay: 1200 });
+        setTimeout(confetti, 1000);
+      }
+    }
   }
 
   // ---------- pantalla: panel docente ----------
@@ -635,7 +705,7 @@
             </div>
             <div class="acts">
               <button class="iconbtn" data-edit="${esc(q.id)}" title="Editar" aria-label="Editar">${ic('edit')}</button>
-              <button class="iconbtn del" data-del="${esc(q.id)}" title="Eliminar" aria-label="Eliminar">${ic('trash')}</button>
+              <button class="iconbtn del" data-sfx="none" data-del="${esc(q.id)}" title="Eliminar" aria-label="Eliminar">${ic('trash')}</button>
             </div>
           </div>`).join('')}
       </div>`;
@@ -649,7 +719,7 @@
         if (!confirm(`¿Eliminar la pregunta?\n\n"${q.text}"`)) return;
         try {
           await api('/admin/questions/' + q.id, { method: 'DELETE', admin: true });
-          toast('Pregunta eliminada');
+          toast('Pregunta eliminada', false, 'delete');
           adminList(body, show);
         } catch (err) { toast(err.message, true); }
       })
@@ -792,7 +862,7 @@
       try {
         if (editing) await api('/admin/questions/' + editing.id, { method: 'PUT', body: payload, admin: true });
         else await api('/admin/questions', { method: 'POST', body: payload, admin: true });
-        toast(editing ? 'Pregunta actualizada' : 'Pregunta creada');
+        toast(editing ? 'Pregunta actualizada' : 'Pregunta creada', false, 'save');
         show(editing ? 'preguntas' : 'nueva');
       } catch (err) {
         toast(err.message, true);
@@ -849,7 +919,7 @@
             shuffle: document.getElementById('sShuffle').checked,
           },
         });
-        toast('Ajustes guardados');
+        toast('Ajustes guardados', false, 'save');
       } catch (err) { toast(err.message, true); }
     });
 
@@ -882,7 +952,7 @@
       if (!confirm('¿Seguro que querés borrar todo el ranking? No se puede deshacer.')) return;
       try {
         await api('/admin/ranking', { method: 'DELETE', admin: true });
-        toast('Ranking reiniciado');
+        toast('Ranking reiniciado', false, 'delete');
       } catch (err) { toast(err.message, true); }
     });
   }
