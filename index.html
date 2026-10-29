@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b3b3c">
+  <meta name="description" content="Preguntero: el juego de preguntas de Biología para 4° año.">
+  <title>Preguntero · Biología</title>
+  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <!-- Fondo animado: células, bacterias y ADN flotando -->
+  <div class="bg" aria-hidden="true">
+    <svg class="float f1" viewBox="0 0 100 100"><use href="#ico-cell"/></svg>
+    <svg class="float f2" viewBox="0 0 100 100"><use href="#ico-dna"/></svg>
+    <svg class="float f3" viewBox="0 0 100 100"><use href="#ico-bacteria"/></svg>
+    <svg class="float f4" viewBox="0 0 100 100"><use href="#ico-leaf"/></svg>
+    <svg class="float f5" viewBox="0 0 100 100"><use href="#ico-virus"/></svg>
+    <svg class="float f6" viewBox="0 0 100 100"><use href="#ico-cell"/></svg>
+    <svg class="float f7" viewBox="0 0 100 100"><use href="#ico-dna"/></svg>
+    <svg class="float f8" viewBox="0 0 100 100"><use href="#ico-bacteria"/></svg>
+    <div class="bubbles"></div>
+  </div>
+
+  <header class="topbar">
+    <a href="#/" class="brand" aria-label="Inicio">
+      <svg viewBox="0 0 100 100" class="brand-ico"><use href="#ico-dna"/></svg>
+      <span>Preguntero</span>
+    </a>
+    <nav class="topnav">
+      <a href="#/ranking" class="navbtn" title="Ranking">🏆<span>Ranking</span></a>
+      <button class="navbtn" id="soundToggle" title="Sonido" aria-label="Activar o desactivar sonido">🔊</button>
+    </nav>
+  </header>
+
+  <main id="app" tabindex="-1"></main>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <!-- Ilustraciones SVG reutilizables -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <radialGradient id="g-cyto" cx="40%" cy="35%" r="70%">
+        <stop offset="0" stop-color="#d7ffe9"/><stop offset=".6" stop-color="#7fe0b0"/><stop offset="1" stop-color="#2fb07a"/>
+      </radialGradient>
+      <radialGradient id="g-nuc" cx="40%" cy="35%" r="70%">
+        <stop offset="0" stop-color="#e7d2ff"/><stop offset="1" stop-color="#8f5bd8"/>
+      </radialGradient>
+      <linearGradient id="g-leaf" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#b6f36b"/><stop offset="1" stop-color="#2e9d4f"/>
+      </linearGradient>
+      <radialGradient id="g-bac" cx="40%" cy="35%" r="70%">
+        <stop offset="0" stop-color="#ffe3ef"/><stop offset="1" stop-color="#ff5d8f"/>
+      </radialGradient>
+      <radialGradient id="g-vir" cx="40%" cy="35%" r="70%">
+        <stop offset="0" stop-color="#fff2c2"/><stop offset="1" stop-color="#ffb627"/>
+      </radialGradient>
+    </defs>
+
+    <symbol id="ico-cell" viewBox="0 0 100 100">
+      <path d="M50 6c22 0 42 15 43 40 1 26-19 48-45 48C24 94 7 76 7 52 7 26 26 6 50 6z" fill="url(#g-cyto)" stroke="#1f8a5c" stroke-width="3"/>
+      <circle cx="52" cy="48" r="17" fill="url(#g-nuc)" stroke="#6b3fb5" stroke-width="2.5"/>
+      <circle cx="56" cy="44" r="5" fill="#5a2ea6" opacity=".7"/>
+      <ellipse cx="26" cy="64" rx="9" ry="4.5" fill="#ff8a5b" transform="rotate(-25 26 64)"/>
+      <path d="M20 64c3-2 6 2 9 0s4-2 6-1" stroke="#c4502b" stroke-width="1.4" fill="none" transform="rotate(-25 26 64)"/>
+      <ellipse cx="74" cy="72" rx="7" ry="3.6" fill="#ff8a5b" transform="rotate(30 74 72)"/>
+      <circle cx="28" cy="34" r="3" fill="#2a8fd6"/><circle cx="76" cy="30" r="2.4" fill="#2a8fd6"/><circle cx="70" cy="52" r="2" fill="#2a8fd6"/>
+    </symbol>
+
+    <symbol id="ico-dna" viewBox="0 0 100 100">
+      <g stroke-linecap="round">
+        <g stroke-width="4">
+          <line x1="34" y1="14" x2="66" y2="14" stroke="#ffd23f"/>
+          <line x1="40" y1="26" x2="60" y2="26" stroke="#4cc9f0"/>
+          <line x1="44" y1="38" x2="56" y2="38" stroke="#ff5d8f"/>
+          <line x1="44" y1="62" x2="56" y2="62" stroke="#9be15d"/>
+          <line x1="40" y1="74" x2="60" y2="74" stroke="#ffd23f"/>
+          <line x1="34" y1="86" x2="66" y2="86" stroke="#4cc9f0"/>
+        </g>
+        <path d="M30 6c0 22 40 22 40 44S30 72 30 94" fill="none" stroke="#7b5cff" stroke-width="7"/>
+        <path d="M70 6c0 22-40 22-40 44s40 22 40 44" fill="none" stroke="#2ec4b6" stroke-width="7"/>
+      </g>
+    </symbol>
+
+    <symbol id="ico-bacteria" viewBox="0 0 100 100">
+      <g stroke="#d63c6c" stroke-width="2.5" stroke-linecap="round" fill="none">
+        <path d="M18 30c-6-4-8-10-6-14M82 70c6 4 8 10 6 14M30 74c-3 6-8 9-12 9M70 26c3-6 8-9 12-9"/>
+      </g>
+      <rect x="14" y="32" width="72" height="36" rx="18" fill="url(#g-bac)" stroke="#d63c6c" stroke-width="3" transform="rotate(-20 50 50)"/>
+      <circle cx="40" cy="52" r="4" fill="#fff"/><circle cx="58" cy="45" r="4" fill="#fff"/>
+      <circle cx="41" cy="53" r="2" fill="#3a0d1d"/><circle cx="59" cy="46" r="2" fill="#3a0d1d"/>
+      <path d="M45 60c4 3 9 1 11-2" stroke="#3a0d1d" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="ico-leaf" viewBox="0 0 100 100">
+      <path d="M14 86C10 46 40 12 88 12c2 44-26 76-74 74z" fill="url(#g-leaf)" stroke="#1f7a3a" stroke-width="3"/>
+      <path d="M14 86C34 62 54 42 82 18M40 60l-4-16M52 48l-2-16M40 60l16 2M52 48l16 0" stroke="#1f7a3a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="ico-virus" viewBox="0 0 100 100">
+      <g stroke="#c98200" stroke-width="3" stroke-linecap="round">
+        <line x1="50" y1="8" x2="50" y2="22"/><line x1="50" y1="78" x2="50" y2="92"/>
+        <line x1="8" y1="50" x2="22" y2="50"/><line x1="78" y1="50" x2="92" y2="50"/>
+        <line x1="20" y1="20" x2="30" y2="30"/><line x1="70" y1="70" x2="80" y2="80"/>
+        <line x1="80" y1="20" x2="70" y2="30"/><line x1="20" y1="80" x2="30" y2="70"/>
+      </g>
+      <g fill="#ffd23f" stroke="#c98200" stroke-width="2">
+        <circle cx="50" cy="8" r="4"/><circle cx="50" cy="92" r="4"/><circle cx="8" cy="50" r="4"/><circle cx="92" cy="50" r="4"/>
+        <circle cx="20" cy="20" r="4"/><circle cx="80" cy="80" r="4"/><circle cx="80" cy="20" r="4"/><circle cx="20" cy="80" r="4"/>
+      </g>
+      <circle cx="50" cy="50" r="28" fill="url(#g-vir)" stroke="#c98200" stroke-width="3"/>
+      <circle cx="42" cy="44" r="4" fill="#c98200" opacity=".5"/><circle cx="58" cy="56" r="5" fill="#c98200" opacity=".5"/>
+    </symbol>
+
+    <symbol id="ico-microscope" viewBox="0 0 100 100">
+      <rect x="18" y="84" width="64" height="10" rx="5" fill="#4cc9f0" stroke="#13506b" stroke-width="3"/>
+      <path d="M62 84c14-6 18-22 10-34" fill="none" stroke="#13506b" stroke-width="6" stroke-linecap="round"/>
+      <rect x="30" y="64" width="40" height="7" rx="3" fill="#a9e7fb" stroke="#13506b" stroke-width="3"/>
+      <rect x="40" y="10" width="16" height="44" rx="5" fill="#7b5cff" stroke="#2e1a7a" stroke-width="3" transform="rotate(-25 48 32)"/>
+      <rect x="36" y="4" width="22" height="10" rx="4" fill="#ffd23f" stroke="#2e1a7a" stroke-width="3" transform="rotate(-25 47 9)"/>
+      <rect x="54" y="52" width="10" height="10" rx="2" fill="#ff5d8f" stroke="#2e1a7a" stroke-width="3"/>
+    </symbol>
+
+    <!-- Mascota: "Celu", una célula con cara -->
+    <symbol id="mascot" viewBox="0 0 200 200">
+      <ellipse cx="100" cy="186" rx="56" ry="8" fill="#000" opacity=".18"/>
+      <path class="m-body" d="M100 18c44 0 80 30 80 78 0 50-36 84-82 84-46 0-78-34-78-80 0-48 34-82 80-82z" fill="url(#g-cyto)" stroke="#1f8a5c" stroke-width="5"/>
+      <circle cx="132" cy="64" r="20" fill="url(#g-nuc)" stroke="#6b3fb5" stroke-width="4"/>
+      <circle cx="138" cy="58" r="6" fill="#5a2ea6" opacity=".7"/>
+      <ellipse cx="46" cy="72" rx="14" ry="7" fill="#ff8a5b" transform="rotate(-30 46 72)"/>
+      <ellipse cx="150" cy="140" rx="12" ry="6" fill="#ff8a5b" transform="rotate(25 150 140)"/>
+      <circle cx="60" cy="140" r="4" fill="#2a8fd6"/><circle cx="74" cy="44" r="3.5" fill="#2a8fd6"/><circle cx="160" cy="108" r="3" fill="#2a8fd6"/>
+      <g class="m-eyes">
+        <ellipse cx="78" cy="104" rx="13" ry="16" fill="#fff" stroke="#173b2c" stroke-width="3"/>
+        <ellipse cx="118" cy="104" rx="13" ry="16" fill="#fff" stroke="#173b2c" stroke-width="3"/>
+        <circle class="m-pupil" cx="81" cy="107" r="7" fill="#173b2c"/>
+        <circle class="m-pupil" cx="121" cy="107" r="7" fill="#173b2c"/>
+        <circle cx="84" cy="103" r="2.5" fill="#fff"/><circle cx="124" cy="103" r="2.5" fill="#fff"/>
+      </g>
+      <ellipse cx="62" cy="128" rx="9" ry="5" fill="#ff8fb1" opacity=".7"/>
+      <ellipse cx="136" cy="128" rx="9" ry="5" fill="#ff8fb1" opacity=".7"/>
+      <path class="m-mouth" d="M84 132c8 10 22 10 30 0" stroke="#173b2c" stroke-width="4" fill="#ff6b8b" stroke-linecap="round"/>
+    </symbol>
+  </svg>
+
+  <script src="/app.js"></script>
+</body>
+</html>
