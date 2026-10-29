@@ -3,9 +3,12 @@
   'use strict';
 
   const $app = document.getElementById('app');
-  const AVATARS = ['🐸', '🦋', '🐙', '🦎', '🐝', '🐢', '🦠', '🧬', '🌻', '🍄', '🐬', '🦜'];
+  const AVATARS = [
+    ['cell', 'Célula'], ['bacteria', 'Bacteria'], ['virus', 'Virus'], ['frog', 'Rana'],
+    ['mushroom', 'Hongo'], ['fish', 'Pez'], ['leaf', 'Hoja'], ['dna', 'ADN'],
+  ];
+  const AVATAR_IDS = AVATARS.map(([id]) => id);
   const ANSWER_ICONS = ['ico-cell', 'ico-dna', 'ico-leaf', 'ico-bacteria'];
-  const AVATAR_LABEL = 'avatar';
 
   const state = {
     info: null,
@@ -22,13 +25,19 @@
   function esc(s) {
     return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   }
-  const svgUse = (id, cls = '') => `<svg class="${cls}" viewBox="0 0 100 100" aria-hidden="true"><use href="#${id}"/></svg>`;
+  const ic = (name) => `<svg class="i" aria-hidden="true"><use href="#i-${name}"/></svg>`;
+  const art = (id, cls = '') => `<svg class="${cls}" viewBox="0 0 100 100" aria-hidden="true"><use href="#${id}"/></svg>`;
+  const avatar = (id, cls = '') => art('ico-' + (AVATAR_IDS.includes(id) ? id : 'cell'), cls);
   const mascot = (cls = 'mascot') => `<svg class="${cls}" viewBox="0 0 200 200" role="img" aria-label="Celu, la mascota"><use href="#mascot"/></svg>`;
   const fmt = (n) => Number(n || 0).toLocaleString('es-AR');
 
   function loadPlayer() {
-    try { return JSON.parse(localStorage.getItem('preguntero-player')) || { name: '', avatar: AVATARS[0] }; }
-    catch { return { name: '', avatar: AVATARS[0] }; }
+    const def = { name: '', avatar: 'cell' };
+    try {
+      const p = JSON.parse(localStorage.getItem('preguntero-player')) || def;
+      if (!AVATARS.some(([id]) => id === p.avatar)) p.avatar = 'cell';
+      return p;
+    } catch { return def; }
   }
 
   async function api(path, opts = {}) {
@@ -86,7 +95,7 @@
   };
 
   const soundBtn = document.getElementById('soundToggle');
-  const paintSound = () => { soundBtn.textContent = state.sound ? '🔊' : '🔇'; };
+  const paintSound = () => { soundBtn.innerHTML = ic(state.sound ? 'sound' : 'mute'); };
   soundBtn.addEventListener('click', () => {
     state.sound = !state.sound;
     localStorage.setItem('preguntero-sound', state.sound ? 'on' : 'off');
@@ -95,26 +104,25 @@
   });
   paintSound();
 
-  // ---------- confeti ----------
+  // ---------- confeti (formas planas) ----------
   function confetti(duration = 3500) {
     const cv = document.getElementById('confetti');
     const ctx = cv.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
     cv.width = innerWidth * dpr;
     cv.height = innerHeight * dpr;
-    ctx.scale(dpr, dpr);
-    const colors = ['#9be15d', '#4cc9f0', '#ff5d8f', '#ffd23f', '#7b5cff', '#2ec4b6'];
-    const shapes = ['●', '🧬', '🍃', '✦', '■'];
-    const parts = Array.from({ length: 140 }, () => ({
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const colors = ['#3fae6a', '#3b82c4', '#ef7c5f', '#f5c341', '#7d5ba6'];
+    const parts = Array.from({ length: 120 }, () => ({
       x: Math.random() * innerWidth,
       y: -20 - Math.random() * innerHeight * 0.5,
       vx: (Math.random() - 0.5) * 3,
       vy: 2 + Math.random() * 4,
       r: Math.random() * Math.PI,
       vr: (Math.random() - 0.5) * 0.2,
-      s: 10 + Math.random() * 14,
+      s: 7 + Math.random() * 7,
       c: colors[(Math.random() * colors.length) | 0],
-      sh: shapes[(Math.random() * shapes.length) | 0],
+      round: Math.random() < 0.4,
     }));
     const end = performance.now() + duration;
     (function frame(now) {
@@ -125,28 +133,19 @@
         ctx.translate(p.x, p.y);
         ctx.rotate(p.r);
         ctx.fillStyle = p.c;
-        ctx.font = `${p.s}px sans-serif`;
-        ctx.fillText(p.sh, 0, 0);
+        ctx.strokeStyle = '#1e2b2b';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        if (p.round) ctx.arc(0, 0, p.s / 2, 0, Math.PI * 2);
+        else ctx.rect(-p.s / 2, -p.s / 4, p.s, p.s / 2);
+        ctx.fill();
+        ctx.stroke();
         ctx.restore();
       }
       if (now < end) requestAnimationFrame(frame);
       else ctx.clearRect(0, 0, innerWidth, innerHeight);
     })(performance.now());
   }
-
-  // burbujas del fondo
-  (function bubbles() {
-    const wrap = document.querySelector('.bubbles');
-    for (let i = 0; i < 14; i++) {
-      const b = document.createElement('span');
-      const s = 6 + Math.random() * 22;
-      Object.assign(b.style, {
-        width: s + 'px', height: s + 'px', left: Math.random() * 100 + '%',
-        animationDuration: 10 + Math.random() * 16 + 's', animationDelay: -Math.random() * 20 + 's',
-      });
-      wrap.appendChild(b);
-    }
-  })();
 
   // ---------- router ----------
   const routes = {
@@ -176,7 +175,7 @@
   }
 
   async function getInfo() {
-    try { state.info = await api('/info'); } catch { state.info = state.info || null; }
+    try { state.info = await api('/info'); } catch { /* sin conexión */ }
     return state.info;
   }
 
@@ -185,26 +184,26 @@
     $app.innerHTML = `
       <section class="screen hero">
         ${mascot()}
-        <h1 class="title">Preguntero</h1>
-        <p class="subtitle" id="homeSubtitle">¡Poné a prueba lo que sabés de Biología!</p>
-        <span class="chip" id="homeChip">🔬 Cargando preguntas…</span>
+        <h1 class="title">Pregun<span>tero</span></h1>
+        <p class="subtitle" id="homeSubtitle">Poné a prueba lo que sabés de Biología</p>
+        <span class="chip" id="homeChip">Cargando preguntas…</span>
         <div class="home-actions">
-          <a class="btn big" href="#/jugar">▶ ¡Jugar!</a>
-          <a class="btn yellow" href="#/ranking">🏆 Ver ranking</a>
+          <a class="btn big" href="#/jugar">${ic('play')} Jugar</a>
+          <a class="btn ghost" href="#/ranking">${ic('trophy')} Ver ranking</a>
         </div>
         <div class="feature-row">
-          <div class="feature">${svgUse('ico-microscope')}<div><b>Respondé rápido</b><small>Más velocidad = más puntos</small></div></div>
-          <div class="feature">${svgUse('ico-dna')}<div><b>Hacé rachas</b><small>Acertá seguido y sumá bonus</small></div></div>
-          <div class="feature">${svgUse('ico-cell')}<div><b>Llegá al podio</b><small>Los 3 mejores brillan</small></div></div>
+          <div class="feature">${art('ico-microscope')}<div><b>Respondé rápido</b><small>Más velocidad, más puntos</small></div></div>
+          <div class="feature">${art('ico-dna')}<div><b>Hacé rachas</b><small>Acertá seguido y sumá bonus</small></div></div>
+          <div class="feature">${art('ico-cell')}<div><b>Llegá al podio</b><small>Los 3 mejores se destacan</small></div></div>
         </div>
-        <a class="teacher-link" href="#/profesor">👩‍🏫 Panel docente</a>
+        <a class="teacher-link" href="#/profesor">${ic('lock')} Panel docente</a>
       </section>`;
     const info = await getInfo();
     if (!info) return;
-    document.getElementById('homeSubtitle').textContent = `${info.title} · ¡Poné a prueba lo que sabés!`;
+    document.getElementById('homeSubtitle').textContent = `${info.title} · Poné a prueba lo que sabés`;
     document.getElementById('homeChip').textContent = info.totalQuestions
-      ? `🧪 ${info.questionsPerGame} preguntas por partida`
-      : '🧪 Todavía no hay preguntas cargadas';
+      ? `${info.questionsPerGame} preguntas por partida`
+      : 'Todavía no hay preguntas cargadas';
   }
 
   // ---------- pantalla: ingreso de nombre ----------
@@ -212,10 +211,10 @@
     const p = state.player;
     $app.innerHTML = `
       <section class="screen card join stack">
-        <div class="row" style="justify-content:space-between">
+        <div class="row" style="justify-content:space-between;flex-wrap:nowrap">
           <div>
             <h2>¿Quién juega?</h2>
-            <p class="muted" style="margin:0">Escribí tu nombre y elegí tu personaje.</p>
+            <p class="muted" style="margin:4px 0 0;font-weight:700">Escribí tu nombre y elegí tu personaje.</p>
           </div>
           ${mascot('mascot-sm')}
         </div>
@@ -227,18 +226,17 @@
           <div>
             <span class="label">Tu personaje</span>
             <div class="avatars" role="group" aria-label="Elegí un personaje">
-              ${AVATARS.map((a) => `<button type="button" class="avatar-opt" data-av="${a}" aria-pressed="${a === p.avatar}" aria-label="${AVATAR_LABEL} ${a}">${a}</button>`).join('')}
+              ${AVATARS.map(([id, label]) => `<button type="button" class="avatar-opt" data-av="${id}" aria-pressed="${id === p.avatar}" aria-label="${label}" title="${label}">${avatar(id)}</button>`).join('')}
             </div>
           </div>
-          <button class="btn big" type="submit" id="startBtn">¡Empezar! 🚀</button>
+          <button class="btn big" type="submit" id="startBtn">Empezar ${ic('arrow')}</button>
         </form>
       </section>`;
-    const sm = $app.querySelector('.mascot-sm');
-    sm.style.cssText = 'width:84px;height:84px';
-    let avatar = p.avatar;
+    $app.querySelector('.mascot-sm').style.cssText = 'width:80px;height:80px;flex:none';
+    let chosen = p.avatar;
     $app.querySelectorAll('.avatar-opt').forEach((b) =>
       b.addEventListener('click', () => {
-        avatar = b.dataset.av;
+        chosen = b.dataset.av;
         $app.querySelectorAll('.avatar-opt').forEach((x) => x.setAttribute('aria-pressed', x === b));
         sfx.click();
       })
@@ -248,13 +246,13 @@
     document.getElementById('joinForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const name = nameInput.value.trim();
-      if (name.length < 2) return toast('Escribí tu nombre (mínimo 2 letras) ✏️', true);
+      if (name.length < 2) return toast('Escribí tu nombre (mínimo 2 letras)', true);
       const btn = document.getElementById('startBtn');
       btn.disabled = true;
       try {
-        state.player = { name, avatar };
+        state.player = { name, avatar: chosen };
         localStorage.setItem('preguntero-player', JSON.stringify(state.player));
-        const g = await api('/games', { method: 'POST', body: { name, avatar } });
+        const g = await api('/games', { method: 'POST', body: { name, avatar: chosen } });
         state.game = { ...g, index: 0, score: 0, streak: 0 };
         go('#/partida');
       } catch (err) {
@@ -271,6 +269,7 @@
     let n = 3;
     $app.innerHTML = `<section class="countdown"><div class="num" id="cd">3</div></section>`;
     const cd = document.getElementById('cd');
+    const restart = () => { cd.style.animation = 'none'; void cd.offsetWidth; cd.style.animation = ''; };
     sfx.tick();
     const iv = setInterval(() => {
       n -= 1;
@@ -278,13 +277,13 @@
         clearInterval(iv);
         sfx.go();
         cd.textContent = '¡Ya!';
-        cd.style.animation = 'none'; void cd.offsetWidth; cd.style.animation = '';
+        restart();
         setTimeout(showQuestion, 600);
         return;
       }
       sfx.tick();
       cd.textContent = n;
-      cd.style.animation = 'none'; void cd.offsetWidth; cd.style.animation = '';
+      restart();
     }, 900);
     cleanup = () => clearInterval(iv);
   }
@@ -297,10 +296,10 @@
     $app.innerHTML = `
       <section class="screen">
         <div class="hud">
-          <div class="player"><span class="av">${esc(state.player.avatar)}</span><span class="nm">${esc(state.player.name)}</span></div>
+          <div class="player">${avatar(state.player.avatar)}<span class="nm">${esc(state.player.name)}</span></div>
           <div class="row" style="gap:10px;flex-wrap:nowrap">
-            ${g.streak >= 2 ? `<span class="streak">🔥 x${g.streak}</span>` : ''}
-            <span class="score-pill" id="scorePill">⭐ ${fmt(g.score)}</span>
+            ${g.streak >= 2 ? `<span class="streak">${ic('flame')} x${g.streak}</span>` : ''}
+            <span class="score-pill">${ic('star')} <span id="scoreVal">${fmt(g.score)}</span></span>
           </div>
         </div>
         <div class="progress" aria-hidden="true"><i style="width:${(g.index / total) * 100}%"></i></div>
@@ -308,10 +307,10 @@
           <div class="qmeta">
             <div>
               <div class="qnum">Pregunta ${g.index + 1} de ${total}</div>
-              <span class="chip" style="margin-top:6px">🔬 ${esc(q.topic)}</span>
+              <span class="chip blue">${esc(q.topic)}</span>
             </div>
             <div class="timer" id="timer" role="timer" aria-label="Tiempo restante">
-              <svg viewBox="0 0 64 64"><circle class="track" cx="32" cy="32" r="28"/><circle class="bar" cx="32" cy="32" r="28"/></svg>
+              <svg viewBox="0 0 64 64"><circle class="track" cx="32" cy="32" r="28"/><circle class="bar" cx="32" cy="32" r="28"/><circle class="rim" cx="32" cy="32" r="31"/><circle class="rim" cx="32" cy="32" r="24.5"/></svg>
               <b id="timerNum">${Math.round(timeMs / 1000)}</b>
             </div>
           </div>
@@ -320,7 +319,7 @@
           <div class="answers">
             ${q.answers.map((a, i) => `
               <button class="ans" data-i="${i}">
-                <span class="ico">${svgUse(ANSWER_ICONS[i])}</span>
+                <span class="ico">${art(ANSWER_ICONS[i])}</span>
                 <span>${esc(a)}</span>
               </button>`).join('')}
           </div>
@@ -336,8 +335,7 @@
     let raf;
 
     const tick = () => {
-      const elapsed = performance.now() - start;
-      const left = Math.max(0, timeMs - elapsed);
+      const left = Math.max(0, timeMs - (performance.now() - start));
       const p = left / timeMs;
       timerEl.style.setProperty('--p', p);
       const sec = Math.ceil(left / 1000);
@@ -362,7 +360,6 @@
       if (done) return;
       done = true;
       cancelAnimationFrame(raf);
-      timerEl.classList.remove('danger');
       const btns = [...$app.querySelectorAll('.ans')];
       btns.forEach((b) => (b.disabled = true));
       let r;
@@ -378,15 +375,15 @@
       }
       g.score = r.score;
       g.streak = r.streak;
-      document.getElementById('scorePill').textContent = `⭐ ${fmt(g.score)}`;
+      document.getElementById('scoreVal').textContent = fmt(g.score);
 
       btns.forEach((b, i) => {
         if (i === r.correctChoice) {
           b.classList.add('correct');
-          b.insertAdjacentHTML('beforeend', '<span class="mark">✅</span>');
+          b.insertAdjacentHTML('beforeend', `<span class="mark">${ic('check')}</span>`);
         } else if (i === choice) {
           b.classList.add('wrong');
-          b.insertAdjacentHTML('beforeend', '<span class="mark">❌</span>');
+          b.insertAdjacentHTML('beforeend', `<span class="mark">${ic('x')}</span>`);
         } else b.classList.add('dim');
       });
 
@@ -396,23 +393,23 @@
         pop.className = 'points-pop';
         pop.textContent = `+${fmt(r.points)}`;
         document.body.appendChild(pop);
-        setTimeout(() => pop.remove(), 1300);
+        setTimeout(() => pop.remove(), 1200);
       } else sfx.wrong();
 
       const praise = ['¡Excelente!', '¡Genial!', '¡Bien ahí!', '¡Sos crack!', '¡Impecable!'];
       const title = r.isCorrect
-        ? praise[(Math.random() * praise.length) | 0] + (g.streak >= 2 ? ` 🔥 Racha x${g.streak}` : '')
-        : choice < 0 ? '¡Se terminó el tiempo! ⏰' : '¡Uy, casi!';
+        ? praise[(Math.random() * praise.length) | 0]
+        : choice < 0 ? '¡Se terminó el tiempo!' : '¡Uy, casi!';
       const last = g.index + 1 >= g.questions.length;
       const fb = document.getElementById('feedback');
       fb.innerHTML = `
         <div class="feedback ${r.isCorrect ? 'ok' : 'bad'}">
           ${mascot('mascot-sm ' + (r.isCorrect ? 'happy' : 'sad'))}
           <div>
-            <h3>${esc(title)}</h3>
-            ${r.explanation ? `<p>💡 ${esc(r.explanation)}</p>` : ''}
+            <h3>${esc(title)}${r.isCorrect && g.streak >= 2 ? ` <span class="streak">${ic('flame')} Racha x${g.streak}</span>` : ''}</h3>
+            ${r.explanation ? `<p>${ic('bulb')}<span>${esc(r.explanation)}</span></p>` : ''}
           </div>
-          <div class="actions"><button class="btn ${last ? 'yellow' : ''}" id="nextBtn">${last ? 'Ver resultados 🏁' : 'Siguiente ➜'}</button></div>
+          <div class="actions"><button class="btn ${last ? 'yellow' : ''}" id="nextBtn">${last ? `Ver resultados ${ic('flag')}` : `Siguiente ${ic('arrow')}`}</button></div>
         </div>`;
       const next = document.getElementById('nextBtn');
       next.focus({ preventScroll: true });
@@ -430,7 +427,7 @@
   async function renderResult() {
     const g = state.game;
     if (!g) return go('#/ranking');
-    $app.innerHTML = `<div class="loader">${svgUse('ico-dna')}</div>`;
+    $app.innerHTML = `<div class="loader">${art('ico-dna')}</div>`;
     let r;
     try {
       r = await api(`/games/${g.gameId}/finish`, { method: 'POST' });
@@ -440,26 +437,25 @@
     }
     state.lastGameId = g.gameId;
     const pct = r.total ? r.correct / r.total : 0;
-    const msg = pct === 1 ? '¡Perfecto! Sos un/a genio/a de la biología 🧬'
-      : pct >= 0.7 ? '¡Muy buen trabajo! 🌱'
-      : pct >= 0.4 ? '¡Vas bien! Repasá un poco y volvé a intentar 🔬'
-      : '¡A seguir estudiando! Cada error es aprendizaje 🦠';
-    const medal = r.position === 1 ? '🥇' : r.position === 2 ? '🥈' : r.position === 3 ? '🥉' : '🎖️';
+    const msg = pct === 1 ? '¡Perfecto! Sabés muchísimo de biología.'
+      : pct >= 0.7 ? '¡Muy buen trabajo!'
+      : pct >= 0.4 ? 'Vas bien. Repasá un poco y volvé a intentar.'
+      : 'A seguir estudiando: cada error también enseña.';
     $app.innerHTML = `
       <section class="screen card results">
         ${mascot()}
-        <h2 style="font-size:2rem">${esc(state.player.avatar)} ${esc(state.player.name)}</h2>
+        <h2 class="who">${avatar(state.player.avatar)} ${esc(state.player.name)}</h2>
         <div class="big-score">${fmt(r.score)}</div>
         <div class="muted" style="font-weight:800">puntos</div>
         <div class="stats">
           <div class="stat"><b>${r.correct}/${r.total}</b><span>correctas</span></div>
-          <div class="stat"><b>${medal} ${r.position}°</b><span>de ${r.players} jugadores</span></div>
-          <div class="stat"><b>🔥 ${r.bestStreak}</b><span>mejor racha</span></div>
+          <div class="stat"><b>${r.position}°</b><span>de ${r.players} jugadores</span></div>
+          <div class="stat"><b>${r.bestStreak}</b><span>mejor racha</span></div>
         </div>
-        <p style="font-weight:800;font-size:1.15rem">${msg}</p>
+        <p class="result-msg">${msg}</p>
         <div class="row" style="justify-content:center;margin-top:12px">
-          <a class="btn yellow" href="#/ranking">🏆 Ver ranking</a>
-          <a class="btn ghost" href="#/jugar">↻ Jugar otra vez</a>
+          <a class="btn yellow" href="#/ranking">${ic('trophy')} Ver ranking</a>
+          <a class="btn ghost" href="#/jugar">${ic('refresh')} Jugar otra vez</a>
         </div>
       </section>`;
     state.game = null;
@@ -471,13 +467,13 @@
     $app.innerHTML = `
       <section class="screen">
         <div class="rank-head">
-          <h2>🏆 Ranking</h2>
+          <h2>${ic('trophy')} Ranking</h2>
           <div class="row">
             <span class="hint" id="rankCount"></span>
-            <a class="btn small" href="#/jugar">▶ Jugar</a>
+            <a class="btn small" href="#/jugar">${ic('play')} Jugar</a>
           </div>
         </div>
-        <div id="rankBody"><div class="loader">${svgUse('ico-dna')}</div></div>
+        <div id="rankBody"><div class="loader">${art('ico-dna')}</div></div>
       </section>`;
     let first = true;
     let lastSig = '';
@@ -502,33 +498,33 @@
     if (!list.length) {
       body.innerHTML = `
         <div class="card empty-state">
-          ${svgUse('ico-microscope')}
+          ${art('ico-microscope')}
           <h3 style="font-size:1.6rem;margin-top:8px">Todavía no jugó nadie</h3>
-          <p class="muted">¡Sé el primero en llegar al podio!</p>
-          <a class="btn" href="#/jugar">▶ Jugar ahora</a>
+          <p class="muted" style="font-weight:700">¡Sé el primero en llegar al podio!</p>
+          <a class="btn" href="#/jugar">${ic('play')} Jugar ahora</a>
         </div>`;
       return;
     }
     const podiumSlot = (r, place) => {
-      if (!r) return `<div class="pod p${place} empty"><div class="pav">❔</div><div class="pname">—</div><div class="ppts">&nbsp;</div><div class="block">${place}</div></div>`;
+      if (!r) return `<div class="pod p${place} empty"><div class="pav">${avatar('cell')}</div><div class="pname">—</div><div class="ppts">&nbsp;</div><div class="block">${place}</div></div>`;
       const me = r.id === state.lastGameId;
       return `
         <div class="pod p${place}">
-          ${place === 1 ? '<div class="crown">👑</div>' : ''}
-          <div class="pav">${esc(r.avatar || '🧬')}</div>
+          ${place === 1 ? '<svg class="crown" aria-hidden="true"><use href="#i-crown"/></svg>' : ''}
+          <div class="pav">${avatar(r.avatar)}</div>
           <div class="pname" title="${esc(r.name)}">${esc(r.name)}${me ? ' (vos)' : ''}</div>
           <div class="ppts">${fmt(r.score)} pts</div>
-          <div class="block">${place === 1 ? '🥇' : place === 2 ? '🥈' : '🥉'}</div>
+          <div class="block">${place}</div>
         </div>`;
     };
     const rest = list.slice(3);
     body.innerHTML = `
-      <div class="podium">${podiumSlot(list[1], 2)}${podiumSlot(list[0], 1)}${podiumSlot(list[2], 3)}</div>
+      <div class="podium">${podiumSlot(list[1], 2)}${podiumSlot(list[0], 1)}${podiumSlot(list[2], 3)}<div class="podium-base"></div></div>
       ${rest.length ? `<ol class="rank-list" start="4">
         ${rest.map((r, i) => `
           <li class="${r.id === state.lastGameId ? 'me' : ''}" style="animation-delay:${Math.min(i, 15) * 40}ms">
             <span class="pos">${i + 4}</span>
-            <span class="av">${esc(r.avatar || '🧬')}</span>
+            ${avatar(r.avatar, 'av')}
             <span class="nm">${esc(r.name)}<small>${r.correct}/${r.total} correctas · racha ${r.bestStreak}</small></span>
             <span class="pts">${fmt(r.score)}</span>
           </li>`).join('')}
@@ -544,15 +540,15 @@
     }
     $app.innerHTML = `
       <section class="screen card join stack center">
-        ${svgUse('ico-microscope')}
+        ${art('ico-microscope')}
         <h2>Panel docente</h2>
-        <p class="muted" style="margin:0">Ingresá el PIN para cargar y editar preguntas.</p>
+        <p class="muted" style="margin:0;font-weight:700">Ingresá el PIN para cargar y editar preguntas.</p>
         <form id="pinForm" class="stack">
-          <input class="input" id="pin" type="password" inputmode="text" placeholder="PIN" autocomplete="current-password" required style="text-align:center">
-          <button class="btn violet" type="submit">Entrar 🔓</button>
+          <input class="input" id="pin" type="password" placeholder="PIN" autocomplete="current-password" required style="text-align:center">
+          <button class="btn purple" type="submit">${ic('lock')} Entrar</button>
         </form>
       </section>`;
-    $app.querySelector('svg').style.cssText = 'width:90px;height:90px;margin:0 auto';
+    $app.querySelector('svg').style.cssText = 'width:84px;height:84px;margin:0 auto';
     const pinInput = document.getElementById('pin');
     pinInput.focus();
     document.getElementById('pinForm').addEventListener('submit', async (e) => {
@@ -574,13 +570,13 @@
     $app.innerHTML = `
       <section class="screen">
         <div class="admin-head">
-          <h2>${svgUse('ico-microscope')} Panel docente</h2>
-          <button class="btn small ghost" id="logout">Salir</button>
+          <h2>${art('ico-microscope')} Panel docente</h2>
+          <button class="btn small ghost" id="logout">${ic('logout')} Salir</button>
         </div>
         <div class="tabs" role="tablist">
-          <button class="tab" role="tab" data-tab="preguntas">📋 Preguntas</button>
-          <button class="tab" role="tab" data-tab="nueva">➕ Nueva pregunta</button>
-          <button class="tab" role="tab" data-tab="ajustes">⚙️ Ajustes</button>
+          <button class="tab" role="tab" data-tab="preguntas">${ic('list')} Preguntas</button>
+          <button class="tab" role="tab" data-tab="nueva">${ic('plus')} Nueva pregunta</button>
+          <button class="tab" role="tab" data-tab="ajustes">${ic('sliders')} Ajustes</button>
         </div>
         <div id="adminBody"></div>
       </section>`;
@@ -603,17 +599,17 @@
   }
 
   async function adminList(body, show) {
-    body.innerHTML = `<div class="loader">${svgUse('ico-dna')}</div>`;
+    body.innerHTML = `<div class="loader">${art('ico-dna')}</div>`;
     let qs;
     try { qs = await api('/admin/questions', { admin: true }); }
     catch (err) { body.innerHTML = ''; return toast(err.message, true); }
     if (!qs.length) {
       body.innerHTML = `
         <div class="card empty-state">
-          ${svgUse('ico-leaf')}
+          ${art('ico-leaf')}
           <h3 style="font-size:1.6rem;margin-top:8px">No hay preguntas todavía</h3>
-          <p class="muted">Cargá la primera para que los chicos puedan jugar.</p>
-          <button class="btn" id="firstQ">➕ Crear pregunta</button>
+          <p class="muted" style="font-weight:700">Cargá la primera para que los chicos puedan jugar.</p>
+          <button class="btn" id="firstQ">${ic('plus')} Crear pregunta</button>
         </div>`;
       document.getElementById('firstQ').addEventListener('click', () => show('nueva'));
       return;
@@ -622,7 +618,7 @@
     body.innerHTML = `
       <div class="row" style="justify-content:space-between;margin-bottom:12px">
         <span class="hint">${qs.length} pregunta${qs.length === 1 ? '' : 's'} · ${topics.length} tema${topics.length === 1 ? '' : 's'}</span>
-        <button class="btn small" id="addQ">➕ Nueva</button>
+        <button class="btn small" id="addQ">${ic('plus')} Nueva</button>
       </div>
       <div class="qlist">
         ${qs.map((q, i) => `
@@ -632,14 +628,14 @@
               <div class="t">${esc(q.text)}</div>
               <div class="tags">
                 <span class="tag topic">${esc(q.topic)}</span>
-                <span class="tag ok">✅ ${esc(q.answers[q.correct])}</span>
+                <span class="tag ok">${ic('check')} ${esc(q.answers[q.correct])}</span>
                 <span class="tag">${q.answers.length} opciones</span>
-                ${q.image ? '<span class="tag">🖼️ imagen</span>' : ''}
+                ${q.image ? `<span class="tag">${ic('image')} imagen</span>` : ''}
               </div>
             </div>
             <div class="acts">
-              <button class="iconbtn" data-edit="${esc(q.id)}" title="Editar" aria-label="Editar">✏️</button>
-              <button class="iconbtn" data-del="${esc(q.id)}" title="Eliminar" aria-label="Eliminar">🗑️</button>
+              <button class="iconbtn" data-edit="${esc(q.id)}" title="Editar" aria-label="Editar">${ic('edit')}</button>
+              <button class="iconbtn del" data-del="${esc(q.id)}" title="Eliminar" aria-label="Eliminar">${ic('trash')}</button>
             </div>
           </div>`).join('')}
       </div>`;
@@ -653,7 +649,7 @@
         if (!confirm(`¿Eliminar la pregunta?\n\n"${q.text}"`)) return;
         try {
           await api('/admin/questions/' + q.id, { method: 'DELETE', admin: true });
-          toast('Pregunta eliminada 🗑️');
+          toast('Pregunta eliminada');
           adminList(body, show);
         } catch (err) { toast(err.message, true); }
       })
@@ -670,7 +666,7 @@
 
     body.innerHTML = `
       <form class="card form-grid" id="qForm" autocomplete="off">
-        <h3 style="font-size:1.6rem">${editing ? '✏️ Editar pregunta' : '➕ Nueva pregunta'}</h3>
+        <h3>${editing ? `${ic('edit')} Editar pregunta` : `${ic('plus')} Nueva pregunta`}</h3>
         <div>
           <label class="label" for="qText">Pregunta</label>
           <textarea class="input" id="qText" maxlength="300" required placeholder="Ej: ¿Qué organela realiza la fotosíntesis?">${esc(q.text)}</textarea>
@@ -681,10 +677,10 @@
           <datalist id="topicList">${TOPICS.map((t) => `<option value="${t}">`).join('')}</datalist>
         </div>
         <div>
-          <span class="label">Respuestas — marcá la correcta ✅</span>
+          <span class="label">Respuestas (marcá la correcta)</span>
           <div class="ans-edit" id="ansEdit"></div>
           <div class="row" style="margin-top:10px">
-            <button type="button" class="btn small ghost" id="addAns">➕ Agregar opción</button>
+            <button type="button" class="btn small ghost" id="addAns">${ic('plus')} Agregar opción</button>
             <span class="hint">Entre 2 y 4 opciones.</span>
           </div>
         </div>
@@ -698,7 +694,7 @@
         </div>
         <div class="form-actions">
           <button type="button" class="btn ghost" id="cancelQ">Cancelar</button>
-          <button type="submit" class="btn" id="saveQ">💾 Guardar</button>
+          <button type="submit" class="btn" id="saveQ">${ic('save')} Guardar</button>
         </div>
       </form>`;
 
@@ -708,7 +704,7 @@
         <div class="ans-row ${i === correct ? 'is-correct' : ''}">
           <label class="pick"><input type="radio" name="correct" value="${i}" ${i === correct ? 'checked' : ''}><span>Correcta</span></label>
           <input class="input" data-ans="${i}" maxlength="150" placeholder="Opción ${String.fromCharCode(65 + i)}" value="${esc(a)}">
-          <button type="button" class="iconbtn" data-rm="${i}" title="Quitar opción" aria-label="Quitar opción" ${answers.length <= 2 ? 'disabled' : ''}>✖</button>
+          <button type="button" class="iconbtn" data-rm="${i}" title="Quitar opción" aria-label="Quitar opción" ${answers.length <= 2 ? 'disabled' : ''}>${ic('x')}</button>
         </div>`).join('');
       document.getElementById('addAns').disabled = answers.length >= 4;
       ansEdit.querySelectorAll('[data-ans]').forEach((inp) =>
@@ -735,13 +731,13 @@
     const imgBox = document.getElementById('imgBox');
     const paintImage = () => {
       if (image) {
-        imgBox.innerHTML = `<div class="img-preview"><img src="${esc(image)}" alt="Vista previa"><button type="button" class="iconbtn" id="rmImg" aria-label="Quitar imagen">✖</button></div>`;
+        imgBox.innerHTML = `<div class="img-preview"><img src="${esc(image)}" alt="Vista previa"><button type="button" class="iconbtn" id="rmImg" aria-label="Quitar imagen">${ic('x')}</button></div>`;
         document.getElementById('rmImg').addEventListener('click', () => { image = ''; paintImage(); });
         return;
       }
       imgBox.innerHTML = `
         <label class="img-drop" id="drop">
-          <span style="font-size:2rem">🖼️</span>
+          ${ic('image')}
           <span>Tocá para subir una imagen o arrastrala acá</span>
           <input type="file" accept="image/*" hidden id="imgFile">
         </label>
@@ -766,7 +762,10 @@
         const c = document.createElement('canvas');
         c.width = Math.round(img.width * scale);
         c.height = Math.round(img.height * scale);
-        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(0, 0, c.width, c.height);
+        ctx.drawImage(img, 0, 0, c.width, c.height);
         image = c.toDataURL('image/jpeg', 0.82);
         URL.revokeObjectURL(img.src);
         paintImage();
@@ -793,7 +792,7 @@
       try {
         if (editing) await api('/admin/questions/' + editing.id, { method: 'PUT', body: payload, admin: true });
         else await api('/admin/questions', { method: 'POST', body: payload, admin: true });
-        toast(editing ? 'Pregunta actualizada ✅' : '¡Pregunta creada! 🎉');
+        toast(editing ? 'Pregunta actualizada' : 'Pregunta creada');
         show(editing ? 'preguntas' : 'nueva');
       } catch (err) {
         toast(err.message, true);
@@ -810,7 +809,7 @@
     body.innerHTML = `
       <div class="stack">
         <form class="card form-grid" id="sForm">
-          <h3 style="font-size:1.5rem">⚙️ Configuración del juego</h3>
+          <h3>${ic('sliders')} Configuración del juego</h3>
           <div>
             <label class="label" for="sTitle">Nombre de la materia / curso</label>
             <input class="input" id="sTitle" maxlength="60" value="${esc(s.title)}">
@@ -820,22 +819,22 @@
             <input class="input" id="sCount" type="number" min="1" max="100" value="${s.questionsPerGame}" style="max-width:160px">
           </div>
           <label class="switch"><input type="checkbox" id="sShuffle" ${s.shuffle ? 'checked' : ''}> Mezclar preguntas y respuestas en cada partida</label>
-          <div class="form-actions"><button class="btn" type="submit">💾 Guardar ajustes</button></div>
+          <div class="form-actions"><button class="btn" type="submit">${ic('save')} Guardar ajustes</button></div>
         </form>
 
         <div class="card form-grid">
-          <h3 style="font-size:1.5rem">📦 Importar / exportar preguntas</h3>
+          <h3>${ic('download')} Importar / exportar preguntas</h3>
           <p class="hint" style="margin:0">Descargá un respaldo en JSON o cargá preguntas de otro curso.</p>
           <div class="row">
-            <button class="btn small cyan" id="exportQ">⬇️ Exportar</button>
-            <label class="btn small yellow">⬆️ Importar<input type="file" accept="application/json,.json" id="importQ" hidden></label>
+            <button class="btn small blue" id="exportQ">${ic('download')} Exportar</button>
+            <label class="btn small yellow">${ic('upload')} Importar<input type="file" accept="application/json,.json" id="importQ" hidden></label>
           </div>
         </div>
 
         <div class="card form-grid">
-          <h3 style="font-size:1.5rem">🏆 Ranking</h3>
+          <h3>${ic('trophy')} Ranking</h3>
           <p class="hint" style="margin:0">Empezá de cero el ranking (por ejemplo, para otra división o clase).</p>
-          <div><button class="btn small danger" id="resetRank">🧹 Reiniciar ranking</button></div>
+          <div><button class="btn small danger" id="resetRank">${ic('broom')} Reiniciar ranking</button></div>
         </div>
       </div>`;
 
@@ -850,7 +849,7 @@
             shuffle: document.getElementById('sShuffle').checked,
           },
         });
-        toast('Ajustes guardados ✅');
+        toast('Ajustes guardados');
       } catch (err) { toast(err.message, true); }
     });
 
@@ -872,7 +871,7 @@
       try {
         const data = JSON.parse(await file.text());
         const r = await api('/admin/questions/import', { method: 'POST', body: data, admin: true });
-        toast(`Se importaron ${r.added} preguntas${r.errors.length ? ` (${r.errors.length} con errores)` : ''} 📥`, r.errors.length > 0);
+        toast(`Se importaron ${r.added} preguntas${r.errors.length ? ` (${r.errors.length} con errores)` : ''}`, r.errors.length > 0);
       } catch (err) {
         toast(err instanceof SyntaxError ? 'El archivo no es un JSON válido' : err.message, true);
       }
@@ -883,7 +882,7 @@
       if (!confirm('¿Seguro que querés borrar todo el ranking? No se puede deshacer.')) return;
       try {
         await api('/admin/ranking', { method: 'DELETE', admin: true });
-        toast('Ranking reiniciado 🧹');
+        toast('Ranking reiniciado');
       } catch (err) { toast(err.message, true); }
     });
   }
