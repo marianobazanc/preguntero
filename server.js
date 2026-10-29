@@ -18,6 +18,7 @@ const QUESTION_TIME_MS = 20000;
 const BASE_POINTS = 500;
 const SPEED_POINTS = 500;
 const STREAK_BONUS = 100;
+const AVATARS = ['cell', 'bacteria', 'virus', 'frog', 'mushroom', 'fish', 'leaf', 'dna'];
 
 // ---------- persistencia ----------
 fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -205,7 +206,7 @@ async function api(req, res, pathname) {
     if (method === 'POST' && parts.length === 1) {
       const body = await readBody(req);
       const name = cleanText(body.name, 24);
-      const avatar = cleanText(body.avatar, 20);
+      const avatar = AVATARS.includes(body.avatar) ? body.avatar : 'cell';
       if (name.length < 2) return send(res, 400, { error: 'Escribí tu nombre (mínimo 2 letras).' });
       if (!questions.length) return send(res, 409, { error: 'Todavía no hay preguntas cargadas.' });
       const pool = settings.shuffle ? shuffle(questions) : questions.slice();

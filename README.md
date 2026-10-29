@@ -7,11 +7,11 @@ Los alumnos escriben su nombre, eligen un personaje y responden contra reloj. Al
 ## ✨ Qué tiene
 
 **Para los alumnos**
-- Ingreso con nombre y personaje (🐸 🦋 🐙 🦠 🧬 …).
+- Ingreso con nombre y personaje (célula, bacteria, virus, rana, hongo, pez, hoja o ADN).
 - 20 segundos por pregunta, con temporizador animado.
-- Puntaje: 500 por acertar + hasta 500 extra por velocidad + bonus por **racha** de aciertos 🔥.
+- Puntaje: 500 por acertar + hasta 500 extra por velocidad + bonus por **racha** de aciertos.
 - Después de cada respuesta se muestra la correcta y una **explicación** para aprender del error.
-- Mascota animada ("Celu", una célula), sonidos, confeti e ilustraciones de biología (células, ADN, bacterias, virus, hojas, microscopio).
+- Tema claro con colores planos. Mascota animada ("Celu", una célula), sonidos, confeti e ilustraciones SVG propias de biología. No usa emojis, así que se ve igual en Windows, Android y iPhone.
 - Ranking que se actualiza solo cada 5 segundos, ideal para proyectar en el aula.
 
 **Para el docente** (`/#/profesor`, protegido con PIN)
