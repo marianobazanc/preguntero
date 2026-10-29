@@ -1,0 +1,14 @@
+{
+  "name": "preguntero",
+  "version": "1.0.0",
+  "description": "Juego de preguntas y respuestas para Biología de 4° año de secundaria",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

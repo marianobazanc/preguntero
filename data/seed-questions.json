@@ -1,0 +1,146 @@
+[
+  {
+    "id": "seed01",
+    "topic": "Célula",
+    "text": "¿Qué organela es conocida como la \"central energética\" de la célula?",
+    "answers": ["Ribosoma", "Mitocondria", "Aparato de Golgi", "Lisosoma"],
+    "correct": 1,
+    "explanation": "En la mitocondria ocurre la respiración celular, que produce la mayor parte del ATP de la célula.",
+    "image": ""
+  },
+  {
+    "id": "seed02",
+    "topic": "Célula",
+    "text": "¿Cuál de estas estructuras tienen las células vegetales pero NO las animales?",
+    "answers": ["Membrana plasmática", "Núcleo", "Pared celular de celulosa", "Mitocondrias"],
+    "correct": 2,
+    "explanation": "La pared celular de celulosa (junto con los cloroplastos y la gran vacuola central) es típica de las células vegetales.",
+    "image": ""
+  },
+  {
+    "id": "seed03",
+    "topic": "Célula",
+    "text": "Las bacterias son células procariotas. ¿Qué significa eso?",
+    "answers": ["Que no tienen núcleo definido", "Que no tienen ADN", "Que son pluricelulares", "Que hacen fotosíntesis siempre"],
+    "correct": 0,
+    "explanation": "En las procariotas el ADN está en una región llamada nucleoide, sin una membrana nuclear que lo rodee.",
+    "image": ""
+  },
+  {
+    "id": "seed04",
+    "topic": "Célula",
+    "text": "¿Dónde se realiza la fotosíntesis en una célula vegetal?",
+    "answers": ["En la vacuola", "En el núcleo", "En el retículo endoplasmático", "En el cloroplasto"],
+    "correct": 3,
+    "explanation": "Los cloroplastos contienen clorofila, el pigmento que capta la energía de la luz.",
+    "image": ""
+  },
+  {
+    "id": "seed05",
+    "topic": "ADN y genética",
+    "text": "¿Cuáles son las cuatro bases nitrogenadas del ADN?",
+    "answers": ["Adenina, Timina, Citosina y Guanina", "Adenina, Uracilo, Citosina y Guanina", "Alanina, Timina, Cisteína y Glicina", "Adenina, Timina, Celulosa y Glucosa"],
+    "correct": 0,
+    "explanation": "En el ADN la A se aparea con la T y la C con la G. En el ARN, el uracilo (U) reemplaza a la timina.",
+    "image": ""
+  },
+  {
+    "id": "seed06",
+    "topic": "ADN y genética",
+    "text": "¿Cuántos cromosomas tiene una célula somática humana?",
+    "answers": ["23", "46", "44", "92"],
+    "correct": 1,
+    "explanation": "Tenemos 23 pares (46 cromosomas). Las gametas (óvulos y espermatozoides) tienen la mitad: 23.",
+    "image": ""
+  },
+  {
+    "id": "seed07",
+    "topic": "ADN y genética",
+    "text": "Si cruzamos dos plantas heterocigotas (Aa x Aa), ¿qué proporción de la descendencia mostrará el carácter recesivo?",
+    "answers": ["0 %", "50 %", "25 %", "75 %"],
+    "correct": 2,
+    "explanation": "El cuadro de Punnett da AA, Aa, Aa, aa: solo 1 de cada 4 (aa) expresa el carácter recesivo.",
+    "image": ""
+  },
+  {
+    "id": "seed08",
+    "topic": "ADN y genética",
+    "text": "¿A quién se lo considera el \"padre de la genética\" por sus experimentos con arvejas?",
+    "answers": ["Charles Darwin", "Louis Pasteur", "Gregor Mendel", "Robert Hooke"],
+    "correct": 2,
+    "explanation": "Gregor Mendel, en el siglo XIX, descubrió las leyes de la herencia cruzando plantas de arveja.",
+    "image": ""
+  },
+  {
+    "id": "seed09",
+    "topic": "División celular",
+    "text": "¿Qué tipo de división celular produce las gametas?",
+    "answers": ["Mitosis", "Meiosis", "Fisión binaria", "Gemación"],
+    "correct": 1,
+    "explanation": "La meiosis reduce a la mitad el número de cromosomas y genera variabilidad genética.",
+    "image": ""
+  },
+  {
+    "id": "seed10",
+    "topic": "División celular",
+    "text": "Al final de la mitosis, ¿cuántas células hijas se obtienen y cómo son?",
+    "answers": ["4 células distintas", "2 células idénticas a la madre", "2 células con la mitad de cromosomas", "1 célula más grande"],
+    "correct": 1,
+    "explanation": "La mitosis genera 2 células genéticamente idénticas; sirve para el crecimiento y la reparación de tejidos.",
+    "image": ""
+  },
+  {
+    "id": "seed11",
+    "topic": "Evolución",
+    "text": "¿Qué propuso Charles Darwin para explicar la evolución de las especies?",
+    "answers": ["La generación espontánea", "La herencia de caracteres adquiridos", "La selección natural", "El creacionismo"],
+    "correct": 2,
+    "explanation": "Los individuos con variaciones más ventajosas sobreviven y se reproducen más, transmitiendo esas características.",
+    "image": ""
+  },
+  {
+    "id": "seed12",
+    "topic": "Ecología",
+    "text": "En una cadena alimentaria, ¿qué función cumplen las plantas?",
+    "answers": ["Consumidores primarios", "Descomponedores", "Productores", "Consumidores secundarios"],
+    "correct": 2,
+    "explanation": "Las plantas son autótrofas: fabrican su propio alimento a partir de la luz solar y son la base de la cadena.",
+    "image": ""
+  },
+  {
+    "id": "seed13",
+    "topic": "Ecología",
+    "text": "¿Qué rol cumplen los hongos y bacterias que degradan la materia orgánica muerta?",
+    "answers": ["Productores", "Descomponedores", "Depredadores", "Parásitos"],
+    "correct": 1,
+    "explanation": "Los descomponedores reciclan la materia y devuelven nutrientes al suelo para los productores.",
+    "image": ""
+  },
+  {
+    "id": "seed14",
+    "topic": "Ecología",
+    "text": "¿Qué ecorregión argentina se caracteriza por bosques húmedos, gran biodiversidad y las Cataratas del Iguazú?",
+    "answers": ["La Puna", "La Estepa Patagónica", "La Selva Paranaense", "El Espinal"],
+    "correct": 2,
+    "explanation": "La Selva Paranaense (Misiones) es una de las regiones con mayor biodiversidad del país.",
+    "image": ""
+  },
+  {
+    "id": "seed15",
+    "topic": "Metabolismo",
+    "text": "¿Qué gas liberan las plantas como producto de la fotosíntesis?",
+    "answers": ["Dióxido de carbono", "Nitrógeno", "Oxígeno", "Metano"],
+    "correct": 2,
+    "explanation": "6 CO₂ + 6 H₂O + luz → C₆H₁₂O₆ + 6 O₂. El oxígeno proviene de la ruptura del agua.",
+    "image": ""
+  },
+  {
+    "id": "seed16",
+    "topic": "Biomoléculas",
+    "text": "¿Qué biomoléculas son las enzimas que aceleran las reacciones químicas del cuerpo?",
+    "answers": ["Lípidos", "Proteínas", "Glúcidos", "Vitaminas"],
+    "correct": 1,
+    "explanation": "La gran mayoría de las enzimas son proteínas que actúan como catalizadores biológicos.",
+    "image": ""
+  }
+]

@@ -1,0 +1,6 @@
+node_modules/
+data/questions.json
+data/ranking.json
+data/settings.json
+*.tmp
+.env
