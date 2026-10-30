@@ -400,6 +400,67 @@ textarea.input { resize: vertical; min-height: 80px; font-size: 1.05rem; }
 .switch { display: flex; align-items: center; gap: 10px; font-weight: 700; cursor: pointer; }
 .switch input { width: 22px; height: 22px; accent-color: var(--green); }
 
+/* ---------- ayuda ---------- */
+.help-link { display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: var(--blue); font-weight: 800; text-decoration: none; }
+.help-link:hover { text-decoration: underline; }
+.help { font-size: 1.05rem; line-height: 1.55; }
+.help-intro { display: flex; gap: 18px; align-items: center; background: var(--green-light); }
+.help-intro .mascot-sm { width: 90px; height: 90px; flex: none; }
+.help-intro h3 { font-size: 1.6rem; }
+.help-intro p { margin: 6px 0 0; font-weight: 600; }
+@media (max-width: 560px) { .help-intro { flex-direction: column; text-align: center; } }
+.help-sec { padding: 0; overflow: hidden; }
+.help-sec > summary {
+  display: flex; align-items: center; gap: 12px; padding: 18px 22px; cursor: pointer; list-style: none;
+  font-family: var(--font-title); font-weight: 800; font-size: 1.3rem;
+}
+.help-sec > summary::-webkit-details-marker { display: none; }
+.help-sec > summary::after { content: '+'; margin-left: auto; font-size: 1.8rem; line-height: 1; color: var(--ink-soft); }
+.help-sec[open] > summary::after { content: '–'; }
+.help-sec > summary:focus-visible { outline: 3px solid var(--blue); outline-offset: -3px; }
+.help-sec[open] > summary { border-bottom: 2px dashed var(--line-soft); }
+.help .help-sec > :not(summary) { margin-left: 22px; margin-right: 22px; }
+.help .help-sec > :last-child { margin-bottom: 22px; }
+.help-num {
+  flex: none; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%;
+  border: 2px solid var(--line); background: var(--yellow); font-size: 1.1rem;
+}
+.help h4 { font-family: var(--font-title); font-size: 1.15rem; margin: 18px 0 6px; }
+.help p { margin: 14px 0 0; }
+.steps, .bullets { margin-top: 14px; margin-bottom: 0; padding-left: 1.4em; display: grid; gap: 10px; }
+.steps li::marker { font-family: var(--font-title); font-weight: 800; color: var(--green-dark); }
+.fake-btn {
+  display: inline-flex; align-items: center; gap: 5px; padding: 1px 9px; margin: 0 2px; border: 2px solid var(--line);
+  border-radius: 9px; background: var(--green); color: #fff; font-family: var(--font-title); font-weight: 800;
+  font-size: .92em; line-height: 1.5; white-space: nowrap; box-shadow: 0 2px 0 var(--line); vertical-align: 1px; text-decoration: none;
+}
+.fake-btn.ghost, .fake-btn.tabby { background: var(--surface); color: var(--ink); }
+.fake-btn.blue { background: var(--blue); }
+.fake-btn.yellow { background: var(--yellow); color: var(--ink); }
+.fake-btn.danger { background: var(--bad); }
+a.fake-btn.tabby:hover { background: var(--yellow-light); }
+.fake-btn.icon-only { font-size: 0; gap: 0; padding: 3px 6px; }
+.fake-btn.icon-only .i { font-size: 1.05rem; }
+.example { display: inline-block; margin-top: 4px; padding: 0 8px; border-radius: 8px; background: var(--blue-light); font-weight: 700; }
+.example-box { padding: 12px 14px; border-radius: 12px; border: 2px solid var(--line); background: var(--yellow-light); }
+.example-card { margin-top: 14px; border: 2px solid var(--line); border-radius: 12px; overflow: hidden; }
+.ex-row { display: grid; grid-template-columns: 120px 1fr; gap: 12px; padding: 10px 14px; border-bottom: 2px dashed var(--line-soft); }
+.ex-row:last-child { border-bottom: 0; }
+.ex-label { font-weight: 800; color: var(--ink-soft); text-transform: uppercase; font-size: .8rem; letter-spacing: .04em; padding-top: 3px; }
+.ex-answers { display: grid; gap: 4px; }
+.ex-answers .ok { color: var(--green-dark); font-weight: 800; display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.ex-answers small { font-weight: 700; color: var(--ink-soft); }
+@media (max-width: 560px) { .ex-row { grid-template-columns: 1fr; gap: 2px; } }
+.tip { display: flex; gap: 8px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); border: 2px dashed var(--line-soft); }
+.tip .i { flex: none; color: #d99a1e; margin-top: 4px; }
+.backup-bar.demo { margin: 8px 0 0; max-width: none; }
+.faq { margin-top: 14px; margin-bottom: 0; }
+.faq dt { font-weight: 800; margin-top: 16px; }
+.faq dt:first-child { margin-top: 0; }
+.faq dd { margin: 4px 0 0; }
+kbd { padding: 0 6px; border: 2px solid var(--line); border-radius: 6px; background: var(--surface); font-family: inherit; font-weight: 800; font-size: .9em; }
+code { padding: 0 5px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--line-soft); font-size: .92em; }
+
 /* ---------- diálogo ---------- */
 .modal {
   width: min(440px, calc(100% - 32px)); padding: 24px; text-align: center;

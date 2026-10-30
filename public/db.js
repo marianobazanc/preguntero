@@ -226,6 +226,8 @@ window.PregDB = (() => {
 
   async function restore(data) {
     if (!isSnapshot(data)) throw new Error('El archivo no es una copia del Preguntero.');
+    // el PIN no viaja con los datos: así un PIN olvidado se arregla restaurando en un navegador limpio
+    const { pinHash } = await getSettings();
     await tx(['questions', 'ranking', 'kv'], 'readwrite', (t) => {
       const qs = t.objectStore('questions');
       const rk = t.objectStore('ranking');
@@ -237,7 +239,7 @@ window.PregDB = (() => {
         if (!r.error) qs.put({ id: String(q.id || newId()), createdAt, ...r.value });
       });
       for (const r of data.ranking) if (validEntry(r)) rk.put({ ...r, id: String(r.id || newId()) });
-      t.objectStore('kv').put({ ...DEFAULT_SETTINGS, ...(data.settings || {}) }, 'settings');
+      t.objectStore('kv').put({ ...DEFAULT_SETTINGS, ...(data.settings || {}), pinHash }, 'settings');
     });
     changed();
   }
