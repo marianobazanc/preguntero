@@ -400,6 +400,27 @@ textarea.input { resize: vertical; min-height: 80px; font-size: 1.05rem; }
 .switch { display: flex; align-items: center; gap: 10px; font-weight: 700; cursor: pointer; }
 .switch input { width: 22px; height: 22px; accent-color: var(--green); }
 
+/* ---------- diálogo ---------- */
+.modal {
+  width: min(440px, calc(100% - 32px)); padding: 24px; text-align: center;
+  background: var(--surface); color: var(--ink); border: 2px solid var(--line); border-radius: var(--radius);
+  box-shadow: 0 6px 0 var(--line); animation: pop .3s ease-out both;
+}
+.modal::backdrop { background: rgba(30, 43, 43, .45); }
+.modal-ico {
+  width: 64px; height: 64px; margin: 0 auto 12px; display: grid; place-items: center;
+  border: 2px solid var(--line); border-radius: 50%; background: var(--yellow-light);
+}
+.modal-ico .i { width: 30px; height: 30px; }
+.modal.danger .modal-ico { background: var(--coral-light); color: var(--bad); }
+.modal h3 { font-size: 1.6rem; }
+.modal p { margin: 10px 0 0; color: var(--ink-soft); font-weight: 700; }
+.modal blockquote {
+  margin: 14px 0 0; padding: 10px 14px; border: 2px dashed var(--line-soft); border-radius: 12px;
+  background: var(--surface-2); font-weight: 800; text-align: left;
+}
+.modal-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+
 /* ---------- avisos y confeti ---------- */
 #toast {
   position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translate(-50%, 160%);

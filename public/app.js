@@ -95,6 +95,42 @@
     toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
   }
 
+  // Diálogo con el estilo del juego (reemplaza al confirm() del navegador).
+  // Devuelve el value del botón elegido, o null si se cierra con Esc o tocando afuera.
+  function ask({ icon = 'bulb', tone = '', title, message = '', quote = '', buttons }) {
+    return new Promise((resolve) => {
+      const dlg = document.createElement('dialog');
+      dlg.className = `modal ${tone}`;
+      dlg.innerHTML = `
+        <div class="modal-ico">${ic(icon)}</div>
+        <h3>${esc(title)}</h3>
+        ${message ? `<p>${esc(message)}</p>` : ''}
+        ${quote ? `<blockquote>${esc(quote)}</blockquote>` : ''}
+        <div class="modal-actions">
+          ${buttons.map((b, i) => `<button type="button" class="btn small ${b.cls || ''}" data-i="${i}">${b.icon ? ic(b.icon) : ''} ${esc(b.label)}</button>`).join('')}
+        </div>`;
+      document.body.appendChild(dlg);
+      let value = null;
+      dlg.querySelectorAll('[data-i]').forEach((btn) =>
+        btn.addEventListener('click', () => { value = buttons[Number(btn.dataset.i)].value; sfx.click(); dlg.close(); })
+      );
+      dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+      dlg.addEventListener('close', () => { dlg.remove(); resolve(value); });
+      dlg.showModal();
+      // el foco arranca en "Cancelar" para que un Enter apurado no borre nada
+      dlg.querySelector('[data-i="0"]').focus();
+    });
+  }
+
+  const confirmBox = ({ ok, danger, ...opts }) => ask({
+    tone: danger ? 'danger' : '',
+    ...opts,
+    buttons: [
+      { label: 'Cancelar', value: false, cls: 'ghost' },
+      { label: ok, value: true, cls: danger ? 'danger' : '', icon: danger ? 'trash' : 'check' },
+    ],
+  }).then(Boolean);
+
   // ---------- sonido (WebAudio, sin archivos) ----------
   let actx;
   function beep(notes) {
@@ -716,7 +752,7 @@
     body.querySelectorAll('[data-del]').forEach((b) =>
       b.addEventListener('click', async () => {
         const q = qs.find((x) => x.id === b.dataset.del);
-        if (!confirm(`¿Eliminar la pregunta?\n\n"${q.text}"`)) return;
+        if (!(await confirmBox({ icon: 'trash', danger: true, title: '¿Eliminar la pregunta?', quote: q.text, ok: 'Eliminar' }))) return;
         try {
           await DB.deleteQuestion(q.id);
           toast('Pregunta eliminada');
@@ -1011,10 +1047,18 @@
           const { handle, data } = await DB.pickExistingFile();
           let load = false;
           if (data) {
-            load = confirm(`El archivo tiene ${data.questions.length} preguntas y ${data.ranking.length} jugadores.\n\n` +
-              'Aceptar: cargar esos datos en el Preguntero (reemplaza los actuales).\n' +
-              'Cancelar: no cargarlos y sobrescribir el archivo con los datos actuales.');
-            if (!load && !confirm('¿Seguro que querés sobrescribir el archivo con los datos actuales?')) return;
+            const choice = await ask({
+              icon: 'save',
+              title: 'Este archivo ya tiene datos',
+              message: `Tiene ${data.questions.length} preguntas y ${data.ranking.length} jugadores. ¿Qué querés hacer?`,
+              buttons: [
+                { label: 'Cancelar', value: null, cls: 'ghost' },
+                { label: 'Sobrescribir el archivo', value: 'overwrite', cls: 'yellow', icon: 'save' },
+                { label: 'Cargar sus datos', value: 'load', icon: 'upload' },
+              ],
+            });
+            if (!choice) return;
+            load = choice === 'load';
           }
           await DB.linkExistingFile(handle, data, load);
           toast(load ? 'Datos cargados desde el archivo' : 'Archivo de respaldo listo');
@@ -1023,7 +1067,7 @@
         } catch (err) { if (err.name !== 'AbortError') toast(err.message, true); }
       });
       on('fUnlink', async () => {
-        if (!confirm('¿Dejar de guardar en el archivo? Los datos siguen en el navegador y el archivo no se borra.')) return;
+        if (!(await confirmBox({ icon: 'save', title: '¿Dejar de guardar en el archivo?', message: 'Los datos siguen en el navegador y el archivo no se borra.', ok: 'Dejar de usar' }))) return;
         await DB.unlinkFile();
         paintAdminNotes();
       });
@@ -1042,7 +1086,11 @@
       try {
         const data = JSON.parse(await file.text());
         if (!DB.isSnapshot(data)) throw new Error('El archivo no es una copia del Preguntero.');
-        if (!confirm(`Se van a reemplazar TODAS las preguntas, el ranking y los ajustes por los del archivo (${data.questions.length} preguntas, ${data.ranking.length} jugadores).\n\n¿Continuar?`)) return;
+        if (!(await confirmBox({
+          icon: 'upload', danger: true, title: '¿Restaurar desde el archivo?',
+          message: `Se reemplazan todas las preguntas, el ranking y los ajustes por los del archivo (${data.questions.length} preguntas, ${data.ranking.length} jugadores).`,
+          ok: 'Restaurar',
+        }))) return;
         await DB.restore(data);
         toast('Datos restaurados');
         adminData(body);
@@ -1070,7 +1118,7 @@
     });
 
     document.getElementById('resetRank').addEventListener('click', async () => {
-      if (!confirm('¿Seguro que querés borrar todo el ranking? No se puede deshacer.')) return;
+      if (!(await confirmBox({ icon: 'broom', danger: true, title: '¿Borrar todo el ranking?', message: 'No se puede deshacer. Antes conviene descargar una copia.', ok: 'Borrar ranking' }))) return;
       await DB.clearRanking();
       toast('Ranking reiniciado');
       adminData(body);
