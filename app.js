@@ -223,6 +223,7 @@
     resultado: renderResult,
     ranking: renderRanking,
     profesor: renderAdmin,
+    ayuda: renderHelpPage,
   };
 
   const routeKey = () => location.hash.replace(/^#\/?/, '').split('/')[0];
@@ -625,6 +626,140 @@
     if (celebrate && state.lastGameId && list.slice(0, 3).some((r) => r.id === state.lastGameId)) confetti();
   }
 
+  // ---------- ayuda para el docente ----------
+  // Botón "de mentira" para mostrar en la ayuda cómo se ve cada botón real
+  const fake = (icon, label, cls = '') => `<span class="fake-btn ${cls}">${icon ? ic(icon) : ''}${esc(label)}</span>`;
+
+  function helpHtml(inAdmin = true) {
+    // dentro del panel, los nombres de pestañas son links que llevan a ellas
+    const tab = (id, icon, label) => inAdmin
+      ? `<a href="#" class="fake-btn tabby" data-goto="${id}">${ic(icon)}${esc(label)}</a>`
+      : fake(icon, label, 'tabby');
+    return `
+      <div class="help stack">
+        <div class="card help-intro">
+          ${mascot('mascot-sm')}
+          <div>
+            <h3>Guía rápida del Preguntero</h3>
+            <p>Un juego de preguntas para una sola compu: la gente se acerca, pone su nombre, responde y ve en qué puesto quedó. Vos cargás las preguntas y cuidás los datos. <b>No hace falta saber de computación.</b></p>
+            <p class="hint">Tocá cada tema para abrirlo.</p>
+          </div>
+        </div>
+
+        <details class="card help-sec" open>
+          <summary><span class="help-num">1</span> Antes de la feria: dejar todo listo (10 minutos)</summary>
+          <ol class="steps">
+            <li><b>Abrí el Preguntero en Chrome o Edge</b> con internet. Es la única vez que hace falta conexión.</li>
+            <li><b>Instalalo</b> con el botón ${fake('download', 'Instalar app', 'blue')} de arriba en este panel (o con el ícono de instalar en la barra de direcciones). Te queda un ícono en el escritorio, como cualquier programa.</li>
+            <li><b>Cambiá el PIN</b> en ${tab('ajustes', 'sliders', 'Ajustes')}. Elegí uno fácil de recordar para vos, pero que el público no adivine. <span class="example">Ejemplo: <code>feria2026</code></span></li>
+            <li><b>Creá el archivo de respaldo</b> en ${tab('datos', 'save', 'Datos y respaldo')} → ${fake('plus', 'Crear archivo de respaldo')}. Guardalo en <b>Documentos</b> con el nombre que te propone. Desde ese momento, todo se guarda solo ahí.</li>
+            <li><b>Revisá las preguntas</b> en ${tab('preguntas', 'list', 'Preguntas')}. Vienen 16 de ejemplo: podés editarlas, borrarlas o sumar las tuyas.</li>
+            <li><b>Elegí cuántas preguntas responde cada persona</b> en ${tab('ajustes', 'sliders', 'Ajustes')}. Por defecto son 6, que es un buen número para que la fila avance.</li>
+            <li><b>Probá una partida</b> vos mismo/a, para ver cómo se ve. Después podés borrar ese resultado con ${fake('broom', 'Reiniciar ranking', 'danger')} en ${tab('datos', 'save', 'Datos y respaldo')}.</li>
+          </ol>
+          <p class="tip">${ic('bulb')}<span><b>Consejo:</b> dejá la compu enchufada y desactivá la suspensión de pantalla, así no se apaga en medio de la feria.</span></p>
+        </details>
+
+        <details class="card help-sec">
+          <summary><span class="help-num">2</span> Cargar una pregunta, paso a paso</summary>
+          <p>Andá a ${tab('nueva', 'plus', 'Nueva pregunta')} y completá:</p>
+          <div class="example-card">
+            <div class="ex-row"><span class="ex-label">Pregunta</span><span>¿Dónde se realiza la fotosíntesis?</span></div>
+            <div class="ex-row"><span class="ex-label">Tema</span><span>Célula</span></div>
+            <div class="ex-row"><span class="ex-label">Respuestas</span>
+              <span class="ex-answers">
+                <span>Mitocondria</span>
+                <span class="ok">${ic('check')} Cloroplasto <small>(marcada como correcta)</small></span>
+                <span>Núcleo</span>
+                <span>Ribosoma</span>
+              </span>
+            </div>
+            <div class="ex-row"><span class="ex-label">Explicación</span><span>Los cloroplastos tienen clorofila, que capta la luz del sol.</span></div>
+          </div>
+          <ul class="bullets">
+            <li>Puede tener <b>de 2 a 4 respuestas</b>. Marcá la correcta con el círculo <b>Correcta</b>.</li>
+            <li>La <b>explicación</b> aparece después de responder. Es opcional, pero ayuda a que aprendan del error.</li>
+            <li>La <b>imagen</b> es opcional. Subila desde la compu así se ve sin internet (las que se pegan como link necesitan conexión).</li>
+            <li>El orden de las respuestas se mezcla solo en cada partida: podés poner la correcta en cualquier lugar.</li>
+            <li>Para corregir una pregunta tocá ${fake('edit', 'Editar', 'ghost icon-only')} y para borrarla ${fake('trash', 'Eliminar', 'ghost icon-only')}.</li>
+          </ul>
+        </details>
+
+        <details class="card help-sec">
+          <summary><span class="help-num">3</span> Cómo juega el público</summary>
+          <ol class="steps">
+            <li>En la pantalla de inicio tocan ${fake('play', 'Jugar')}.</li>
+            <li>Escriben su <b>nombre</b> (el <b>curso</b> es opcional) y eligen un personaje.</li>
+            <li>Responden las preguntas. Cada una tiene <b>20 segundos</b>.</li>
+            <li>Al final ven sus puntos y su lugar: <span class="example">“Quedaste <b>7°</b> de 43”</span>.</li>
+            <li>A los 20 segundos la pantalla <b>vuelve sola al inicio</b> para la próxima persona.</li>
+          </ol>
+          <h4>¿Cómo se calculan los puntos?</h4>
+          <ul class="bullets">
+            <li><b>500 puntos</b> por cada respuesta correcta.</li>
+            <li><b>Hasta 500 más</b> por rapidez: cuanto antes responde, más suma.</li>
+            <li><b>Bonus por racha</b>: 100 extra desde la segunda correcta seguida, 200 en la tercera, y así.</li>
+          </ul>
+          <p class="example-box"><b>Ejemplo:</b> Martina acierta la primera en 5 segundos: 500 + 375 por rapidez = <b>875</b>. Acierta la segunda en 10 segundos: 500 + 250 + 100 de racha = <b>850</b>. Lleva <b>1.725 puntos</b>.</p>
+          <p class="tip">${ic('bulb')}<span>Si alguien se va en medio de una partida, a los 90 segundos sin que nadie toque nada, el juego vuelve solo al inicio. Esa partida no se guarda.</span></p>
+        </details>
+
+        <details class="card help-sec">
+          <summary><span class="help-num">4</span> Durante la feria</summary>
+          <ul class="bullets">
+            <li><b>No hace falta hacer nada.</b> Cada partida se guarda sola en la compu y en el archivo de respaldo.</li>
+            <li>Para que el público no salga del juego, tocá ${fake('expand', 'Pantalla completa', 'ghost')} acá arriba antes de salir del panel. Para salir de pantalla completa: tecla <kbd>Esc</kbd>.</li>
+            <li>Al salir del panel con ${fake('logout', 'Salir', 'ghost')} (o yendo a otra pantalla) se cierra solo: nadie del público puede entrar sin el PIN.</li>
+            <li>El panel se abre desde el <b>candadito gris</b> ${ic('lock')} que está abajo de todo en la pantalla de inicio.</li>
+          </ul>
+          <h4>Si aparece este aviso arriba de la pantalla:</h4>
+          <div class="backup-bar demo"><span>${ic('save')} El guardado en archivo está en pausa.</span>${fake('refresh', 'Reanudar')}</div>
+          <p>Pasa a veces cuando se vuelve a abrir el navegador: Chrome pide permiso de nuevo para escribir el archivo. <b>Tocá Reanudar</b> y elegí <b>Permitir</b> (si ofrece “Permitir en cada visita”, mejor: no vuelve a preguntar). Mientras tanto, los datos <b>no se pierden</b>: siguen guardados en el navegador.</p>
+        </details>
+
+        <details class="card help-sec">
+          <summary><span class="help-num">5</span> Al terminar: guardar y pasar a otra compu</summary>
+          <ul class="bullets">
+            <li>Si configuraste el archivo de respaldo, <b>ya está todo guardado</b> en ese archivo (por ejemplo <code>Documentos/preguntero-datos.json</code>). Podés copiarlo a un pendrive.</li>
+            <li>Si no, en ${tab('datos', 'save', 'Datos y respaldo')} tocá ${fake('download', 'Descargar copia', 'blue')}: se baja un archivo con todo (preguntas, ranking y ajustes).</li>
+            <li><b>Para usar todo en otra compu:</b> instalá el Preguntero ahí, entrá al panel y en ${tab('datos', 'save', 'Datos y respaldo')} tocá ${fake('upload', 'Usar un archivo existente')} → elegí el archivo → ${fake('upload', 'Cargar sus datos')}.</li>
+            <li>¿Nueva feria y ranking de cero? Primero descargá una copia y después tocá ${fake('broom', 'Reiniciar ranking', 'danger')}.</li>
+          </ul>
+        </details>
+
+        <details class="card help-sec">
+          <summary><span class="help-num">?</span> Preguntas frecuentes</summary>
+          <dl class="faq">
+            <dt>¿Se borra todo si cierro el navegador o apago la compu?</dt>
+            <dd>No. Los datos quedan guardados en la compu. Solo se pierden si alguien borra los “datos de navegación” de Chrome, y para eso está el archivo de respaldo.</dd>
+            <dt>¿Necesito internet en la feria?</dt>
+            <dd>No. Solo la primera vez, para instalarlo. Después funciona sin conexión.</dd>
+            <dt>Se borraron los datos del navegador, ¿cómo los recupero?</dt>
+            <dd>Entrá al panel, andá a ${tab('datos', 'save', 'Datos y respaldo')} → ${fake('upload', 'Usar un archivo existente')}, elegí tu <code>preguntero-datos.json</code> y tocá ${fake('upload', 'Cargar sus datos')}. Vuelve todo: preguntas, ranking y ajustes.</dd>
+            <dt>Me olvidé el PIN.</dt>
+            <dd>En Chrome, borrá los datos de este sitio (candado de la barra de direcciones → Configuración del sitio → Borrar datos). El Preguntero vuelve a empezar con el PIN inicial que te pasó quien lo instaló. Entrá, recuperá tus datos desde el archivo de respaldo como en la pregunta anterior y elegí un PIN nuevo.</dd>
+            <dt>¿Puedo usarlo en Firefox o Safari?</dt>
+            <dd>Sí, el juego funciona. Pero el guardado automático en archivo solo anda en Chrome y Edge: en otros navegadores, descargá una copia a mano al terminar.</dd>
+            <dt>¿Puedo compartir mis preguntas con otro docente?</dt>
+            <dd>Sí. En ${tab('datos', 'save', 'Datos y respaldo')} → ${fake('download', 'Exportar', 'blue')} se bajan solo las preguntas. El otro docente las suma con ${fake('upload', 'Importar', 'yellow')}.</dd>
+            <dt>¿Dos personas pueden jugar a la vez?</dt>
+            <dd>No: está pensado para una persona por vez en la misma compu. Mientras una juega, la siguiente espera su turno.</dd>
+          </dl>
+        </details>
+      </div>`;
+  }
+
+  function renderHelpPage() {
+    $app.innerHTML = `
+      <section class="screen">
+        <div class="admin-head">
+          <h2>${ic('help')} Cómo se usa</h2>
+          <a class="btn small ghost" href="#/profesor">${ic('lock')} Ir al panel docente</a>
+        </div>
+        ${helpHtml(false)}
+      </section>`;
+  }
+
   // ---------- pantalla: panel docente ----------
   function renderAdmin() {
     if (state.admin) return adminPanel();
@@ -637,6 +772,7 @@
           <input class="input" id="pin" type="password" placeholder="PIN" autocomplete="current-password" required style="text-align:center">
           <button class="btn purple" type="submit">${ic('lock')} Entrar</button>
         </form>
+        <a class="help-link" href="#/ayuda">${ic('help')} ¿Primera vez? Mirá cómo se usa</a>
       </section>`;
     $app.querySelector('svg').style.cssText = 'width:84px;height:84px;margin:0 auto';
     const pinInput = document.getElementById('pin');
@@ -670,6 +806,7 @@
           <button class="tab" role="tab" data-tab="nueva">${ic('plus')} Nueva pregunta</button>
           <button class="tab" role="tab" data-tab="ajustes">${ic('sliders')} Ajustes</button>
           <button class="tab" role="tab" data-tab="datos">${ic('save')} Datos y respaldo</button>
+          <button class="tab" role="tab" data-tab="ayuda">${ic('help')} Ayuda</button>
         </div>
         <div id="adminBody"></div>
       </section>`;
@@ -697,8 +834,14 @@
       if (t === 'preguntas') adminList(body, show);
       else if (t === 'nueva') adminForm(body, show, payload);
       else if (t === 'ajustes') adminSettings(body);
+      else if (t === 'ayuda') body.innerHTML = helpHtml();
       else adminData(body);
     };
+    // atajos dentro de la ayuda que llevan a otra pestaña
+    document.getElementById('adminBody').addEventListener('click', (e) => {
+      const a = e.target.closest('[data-goto]');
+      if (a) { e.preventDefault(); show(a.dataset.goto); window.scrollTo(0, 0); }
+    });
     tabs.forEach((b) => b.addEventListener('click', () => show(b.dataset.tab)));
     show(tab);
   }
@@ -914,7 +1057,7 @@
     const b = DB.backupState();
     const notes = [];
     if (await DB.usingDefaultPin())
-      notes.push(`<div class="note warn">${ic('lock')}<span>Todavía usás el PIN de fábrica (<b>biologia</b>). Cambialo en <b>Ajustes</b>.</span></div>`);
+      notes.push(`<div class="note warn">${ic('lock')}<span>Todavía usás el PIN de fábrica (<b>biologia</b>). Cambialo en <b>Ajustes</b>. ¿Primera vez? Mirá la pestaña <b>Ayuda</b>.</span></div>`);
     if (!b.supported)
       notes.push(`<div class="note warn">${ic('save')}<span>Este navegador no puede guardar solo en un archivo. Usá <b>Chrome</b> o <b>Edge</b>, o descargá copias a mano desde <b>Datos y respaldo</b>.</span></div>`);
     else if (!b.linked)
@@ -1088,7 +1231,7 @@
         if (!DB.isSnapshot(data)) throw new Error('El archivo no es una copia del Preguntero.');
         if (!(await confirmBox({
           icon: 'upload', danger: true, title: '¿Restaurar desde el archivo?',
-          message: `Se reemplazan todas las preguntas, el ranking y los ajustes por los del archivo (${data.questions.length} preguntas, ${data.ranking.length} jugadores).`,
+          message: `Se reemplazan todas las preguntas, el ranking y los ajustes por los del archivo (${data.questions.length} preguntas, ${data.ranking.length} jugadores). Tu PIN no cambia.`,
           ok: 'Restaurar',
         }))) return;
         await DB.restore(data);
