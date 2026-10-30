@@ -1,3 +1,19 @@
+/* Fuentes incluidas en el proyecto para que funcione sin internet (SIL OFL 1.1) */
+@font-face {
+  font-family: 'Baloo 2';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url(fonts/baloo2-latin.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url(fonts/nunito-latin.woff2) format('woff2');
+}
+
 :root {
   --paper: #f6f2e8;
   --surface: #ffffff;
@@ -153,7 +169,25 @@ main { position: relative; z-index: 1; width: 100%; max-width: 960px; margin: 0 
 .feature:nth-child(2) { background: var(--yellow-light); }
 .feature:nth-child(3) { background: var(--coral-light); }
 @media (max-width: 560px) { .feature-row { grid-template-columns: 1fr; } .feature { display: flex; align-items: center; gap: 14px; text-align: left; } .feature b { margin-top: 0; } }
-.teacher-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; color: var(--ink-soft); font-weight: 800; text-decoration: none; border-bottom: 2px dashed var(--ink-soft); }
+.teacher-link { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; margin-top: 20px; color: var(--ink-soft); opacity: .35; border-radius: 10px; }
+.teacher-link:hover, .teacher-link:focus-visible { opacity: 1; }
+.home-extra { width: 100%; display: grid; justify-items: center; }
+.top5 { width: 100%; max-width: 560px; margin-top: 18px; display: grid; gap: 10px; justify-items: center; }
+.top5 h3 { display: flex; align-items: center; gap: 8px; font-size: 1.5rem; }
+.top5 .rank-list { width: 100%; margin: 0; text-align: left; }
+.opt { color: var(--ink-soft); font-weight: 700; text-transform: none; }
+.place { font-family: var(--font-title); font-size: 1.6rem; margin-top: 8px; }
+.place b { color: var(--coral); font-size: 2rem; }
+.auto-back { margin: 14px 0 0; }
+.pod .pcourse { color: var(--ink-soft); font-weight: 700; font-size: .85rem; }
+.backup-bar { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 0 auto 8px; padding: 8px 14px; max-width: 760px; border: 2px solid var(--line); border-radius: 12px; background: var(--yellow-light); font-weight: 800; }
+.backup-bar[hidden] { display: none; }
+.backup-bar span { display: inline-flex; align-items: center; gap: 6px; }
+.note { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; border-radius: 12px; border: 2px solid var(--line); font-weight: 700; margin-bottom: 10px; }
+.note .i { flex: none; margin-top: 2px; }
+.note.warn { background: var(--yellow-light); }
+.note.ok { background: var(--green-light); }
+.note.bad { background: var(--coral-light); }
 
 /* ---------- ingreso ---------- */
 .join { max-width: 560px; margin: 0 auto; }
