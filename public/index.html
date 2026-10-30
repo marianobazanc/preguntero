@@ -6,11 +6,10 @@
   <meta name="theme-color" content="#f6f2e8">
   <meta name="description" content="Preguntero: el juego de preguntas de Biología para 4° año.">
   <title>Preguntero · Biología</title>
-  <link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="img/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <!-- Decoración de fondo -->
@@ -33,6 +32,8 @@
       <button class="navbtn" id="soundToggle" title="Sonido" aria-label="Activar o desactivar sonido"><svg class="i"><use href="#i-sound"/></svg></button>
     </nav>
   </header>
+
+  <div id="backupBar" class="backup-bar" role="alert" hidden></div>
 
   <main id="app" tabindex="-1"></main>
 
@@ -68,6 +69,7 @@
       <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></symbol>
       <symbol id="i-broom" viewBox="0 0 24 24"><path d="M14 4l-4 8M6 12h8l2 8H4z"/></symbol>
       <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol>
+      <symbol id="i-expand" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
       <symbol id="i-crown" viewBox="0 0 24 24"><path d="M4 17L3 7l5 4 4-6 4 6 5-4-1 10z" fill="currentColor"/><path d="M4 20h16"/></symbol>
     </g>
 
@@ -183,7 +185,8 @@
     </symbol>
   </svg>
 
-  <script src="/vendor/howler.min.js"></script>
-  <script src="/app.js"></script>
+  <script src="vendor/howler.min.js"></script>
+  <script src="db.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
