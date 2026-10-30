@@ -181,7 +181,7 @@ main { position: relative; z-index: 1; width: 100%; max-width: 960px; margin: 0 
 .auto-back { margin: 14px 0 0; }
 .pod .pcourse { color: var(--ink-soft); font-weight: 700; font-size: .85rem; }
 .backup-bar { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 0 auto 8px; padding: 8px 14px; max-width: 760px; border: 2px solid var(--line); border-radius: 12px; background: var(--yellow-light); font-weight: 800; }
-.backup-bar[hidden] { display: none; }
+.backup-bar[hidden], .chip[hidden] { display: none; }
 .backup-bar span { display: inline-flex; align-items: center; gap: 6px; }
 .note { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; border-radius: 12px; border: 2px solid var(--line); font-weight: 700; margin-bottom: 10px; }
 .note .i { flex: none; margin-top: 2px; }

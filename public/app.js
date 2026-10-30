@@ -227,8 +227,7 @@
       <section class="screen hero">
         ${mascot()}
         <h1 class="title">Pregun<span>tero</span></h1>
-        <p class="subtitle" id="homeSubtitle">Poné a prueba lo que sabés de Biología</p>
-        <span class="chip" id="homeChip">Cargando preguntas…</span>
+        <span class="chip" id="homeChip" hidden>Todavía no hay preguntas cargadas</span>
         <div class="home-actions">
           <a class="btn big" href="#/jugar">${ic('play')} Jugar</a>
           <a class="btn ghost" href="#/ranking">${ic('trophy')} Ver ranking</a>
@@ -236,12 +235,9 @@
         <div id="homeExtra" class="home-extra"></div>
         <a class="teacher-link" href="#/profesor" aria-label="Panel docente" title="Panel docente">${ic('lock')}</a>
       </section>`;
-    const [qs, s, list] = await Promise.all([DB.getQuestions(), DB.getSettings(), DB.getRanking()]);
+    const [qs, list] = await Promise.all([DB.getQuestions(), DB.getRanking()]);
     if (!document.getElementById('homeExtra')) return;
-    document.getElementById('homeSubtitle').textContent = `${s.title} · Poné a prueba lo que sabés`;
-    document.getElementById('homeChip').textContent = qs.length
-      ? `${Math.min(s.questionsPerGame, qs.length)} preguntas por persona`
-      : 'Todavía no hay preguntas cargadas';
+    document.getElementById('homeChip').hidden = qs.length > 0;
     const extra = document.getElementById('homeExtra');
     if (!list.length) {
       extra.innerHTML = `

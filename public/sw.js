@@ -1,6 +1,6 @@
 /* Preguntero — service worker: guarda la app para que funcione sin internet.
    Al publicar cambios, subí VERSION para que los navegadores bajen la versión nueva. */
-const VERSION = 'preguntero-v2';
+const VERSION = 'preguntero-v3';
 const FILES = [
   './',
   'index.html',
